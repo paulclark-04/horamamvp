@@ -1,37 +1,35 @@
-import { requireSession } from "./requireSession";
+import { redirect } from "next/navigation";
 
-/**
- * Custom error for unimplemented features.
- */
-export class NotImplementedError extends Error {
-    constructor(message: string) {
-        super(message);
-        this.name = "NotImplementedError";
-    }
-}
+import { createClient } from "@/lib/supabase/server";
+import { ADMIN_LOGIN_PATH, ADMIN_UNAUTHORIZED_PATH } from "./paths";
 
 /**
  * Require admin privileges.
  *
- * FAIL-CLOSED: This function currently throws NotImplementedError.
- * Do NOT attempt to guess admin status via email checks or JWT claims.
- *
- * TODO: Implement proper admin check once DB schema and RLS are finalized.
- * Expected implementation:
- * 1. Call requireSession() to get user
- * 2. Query DB/RLS to verify admin role
- * 3. Throw or redirect if not admin
- *
- * @throws NotImplementedError - Always, until backend is finalized
+ * Redirects to login if unauthenticated.
+ * FAIL-CLOSED: any error or missing role row redirects to unauthorized.
  */
-export async function requireAdmin(): Promise<never> {
-    // Ensure user is at least authenticated
-    await requireSession();
+export async function requireAdmin() {
+    const supabase = await createClient();
 
-    // FAIL-CLOSED: Always deny until proper implementation
-    throw new NotImplementedError(
-        "requireAdmin() is not yet implemented. " +
-        "Admin role verification requires finalized DB schema and RLS policies. " +
-        "See TODO in src/lib/auth/requireAdmin.ts"
-    );
+    const {
+        data: { user },
+        error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+        redirect(ADMIN_LOGIN_PATH);
+    }
+
+    const { data: profile, error: profileError } = await supabase
+        .from("utilisateurs")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+    if (profileError || !profile || profile.role !== "admin") {
+        redirect(ADMIN_UNAUTHORIZED_PATH);
+    }
+
+    return { user };
 }
