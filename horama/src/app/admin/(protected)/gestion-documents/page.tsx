@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { GestionDocumentsUploadForm } from "@/components/admin/GestionDocumentsUploadForm";
+import { DocumentSignedUrlButton } from "@/components/admin/DocumentSignedUrlButton";
 
 type DocumentRow = {
     id: string;
@@ -79,6 +80,14 @@ export default async function GestionDocumentsPage() {
                                             {doc.bucket}/{doc.url}
                                         </div>
                                     </div>
+                                    <DocumentSignedUrlButton
+                                        mediaId={doc.id}
+                                        label={
+                                            doc.type === "application/pdf"
+                                                ? "Voir"
+                                                : "Télécharger"
+                                        }
+                                    />
                                 </div>
                             </li>
                         ))}
@@ -88,4 +97,3 @@ export default async function GestionDocumentsPage() {
         </section>
     );
 }
-
