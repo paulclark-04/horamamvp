@@ -3,6 +3,7 @@ import Image from "next/image";
 import { LinkedInIcon, TwitterIcon } from "@/components/icons";
 
 export function Footer() {
+
   const navLinks = [
     { href: "/", label: "Accueil" },
     { href: "/site_vitrine/services", label: "Services" },
@@ -23,23 +24,25 @@ export function Footer() {
           {/* Logo & Description */}
           <div className="md:col-span-2">
             <Link href="/" className="inline-flex items-center gap-3 mb-6 group">
-              {/* Logo avec taille contrôlée */}
-              <div className="relative w-12 h-12 overflow-hidden flex-shrink-0">
+              {/* Logo icon */}
+              <div className="relative w-10 h-10 flex-shrink-0">
                 <Image
-                  src="/images/logo.svg"
+                  src="/images/horama_logo_trimmed.png"
                   alt="HORAMA Logo"
                   fill
-                  sizes="48px"
-                  className="object-contain scale-[1.85] translate-y-[5%] brightness-110 transition-transform duration-300 group-hover:scale-[1.95]"
+                  sizes="40px"
+                  className="object-contain transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-white font-semibold text-xl tracking-tight">
-                  HORAMA
-                </span>
-                <span className="text-primary-400/70 text-[11px] font-medium tracking-wide">
-                  Vision Souveraine
-                </span>
+              {/* Wordmark */}
+              <div className="relative h-8 w-24">
+                <Image
+                  src="/images/horama_wordmark.png"
+                  alt="HORAMA"
+                  fill
+                  sizes="96px"
+                  className="object-contain"
+                />
               </div>
             </Link>
             <p className="text-secondary text-sm leading-relaxed max-w-md">
@@ -81,7 +84,7 @@ export function Footer() {
             {/* Social */}
             <div className="flex items-center gap-4 mt-6">
               <a
-                href="https://linkedin.com/company/horama"
+                href="https://www.linkedin.com/in/baptiste-huvelle/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="nav-link"
@@ -103,7 +106,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-neutral-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="footer-bottom pt-8 border-t border-neutral-800 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-muted text-sm">
             &copy; {currentYear} HORAMA. Tous droits réservés.
           </div>

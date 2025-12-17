@@ -50,9 +50,9 @@ function AnimatedGradientText({ children }: { children: React.ReactNode }) {
 
 function GridBackground() {
   return (
-    <div className="absolute inset-0 z-0">
+    <div className="absolute inset-0 z-0 grid-background-container">
       <div
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.02] grid-pattern"
         style={{
           backgroundImage: `
             linear-gradient(to right, white 1px, transparent 1px),
@@ -62,7 +62,7 @@ function GridBackground() {
         }}
       />
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 grid-radial-mask"
         style={{
           background: "radial-gradient(ellipse at center, transparent 0%, black 70%)",
         }}
@@ -268,13 +268,13 @@ function StatsSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`p-6 rounded-2xl bg-gradient-to-br ${colorClasses[stat.color as keyof typeof colorClasses]} border backdrop-blur-sm text-center`}
+              className={`stat-card stat-card-${stat.color} p-6 rounded-2xl bg-gradient-to-br ${colorClasses[stat.color as keyof typeof colorClasses]} border backdrop-blur-sm text-center`}
             >
-              <div className={`text-4xl md:text-5xl font-bold ${textColors[stat.color as keyof typeof textColors]} mb-2`}>
+              <div className={`stat-value text-4xl md:text-5xl font-bold ${textColors[stat.color as keyof typeof textColors]} mb-2`}>
                 {stat.value}
               </div>
-              <div className="text-white font-semibold mb-1">{stat.label}</div>
-              <div className="text-neutral-400 text-sm">{stat.description}</div>
+              <div className="stat-label text-white font-semibold mb-1">{stat.label}</div>
+              <div className="stat-desc text-neutral-400 text-sm">{stat.description}</div>
             </motion.div>
           ))}
         </div>
@@ -444,11 +444,11 @@ function SectorCard({ sector, index }: { sector: Sector; index: number }) {
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className={`rounded-2xl overflow-hidden border ${sector.borderColor} backdrop-blur-sm transition-all duration-300 hover:translate-y-[-4px] h-full flex flex-col`}
+      className={`sector-card rounded-2xl overflow-hidden border ${sector.borderColor} backdrop-blur-sm transition-all duration-300 hover:translate-y-[-4px] h-full flex flex-col`}
       style={{ scrollMarginTop: "180px" }}
     >
       {/* Header with gradient */}
-      <div className={`bg-gradient-to-r ${sector.color} p-6`}>
+      <div className={`sector-card-header bg-gradient-to-r ${sector.color} p-6`}>
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-3xl">
             {sector.icon}
@@ -458,7 +458,7 @@ function SectorCard({ sector, index }: { sector: Sector; index: number }) {
       </div>
 
       {/* Content */}
-      <div className="p-6 bg-neutral-900/50 flex flex-col flex-1">
+      <div className="sector-card-content p-6 bg-neutral-900/50 flex flex-col flex-1">
         <div className="space-y-6 flex-grow">
           {/* Challenges */}
           <div>
@@ -623,18 +623,18 @@ function SolutionsSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`p-8 rounded-2xl bg-neutral-900/50 border ${colorClasses[solution.color].border} backdrop-blur-sm transition-all duration-300`}
+              className={`solution-card solution-card-${solution.color} p-8 rounded-2xl bg-neutral-900/50 border ${colorClasses[solution.color].border} backdrop-blur-sm transition-all duration-300`}
             >
-              <div className={`w-16 h-16 rounded-2xl ${colorClasses[solution.color].icon} flex items-center justify-center mb-6`}>
+              <div className={`solution-icon w-16 h-16 rounded-2xl ${colorClasses[solution.color].icon} flex items-center justify-center mb-6`}>
                 {solution.icon}
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">{solution.title}</h3>
-              <p className="text-neutral-400 mb-6">{solution.description}</p>
+              <h3 className="solution-title text-xl font-bold text-white mb-3">{solution.title}</h3>
+              <p className="solution-desc text-neutral-400 mb-6">{solution.description}</p>
               <div className="flex flex-wrap gap-2">
                 {solution.features.map((feature, fidx) => (
                   <span
                     key={fidx}
-                    className="px-3 py-1 text-xs bg-white/5 text-neutral-300 rounded-full border border-white/10"
+                    className="solution-tag px-3 py-1 text-xs bg-white/5 text-neutral-300 rounded-full border border-white/10"
                   >
                     {feature}
                   </span>

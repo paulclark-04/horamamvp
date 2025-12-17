@@ -7,6 +7,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { MenuIcon, CloseIcon } from "@/components/icons";
 import { useAnnouncement } from "@/contexts/AnnouncementContext";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface NavLinkProps {
   href: string;
@@ -18,10 +19,10 @@ function NavLink({ href, children, isActive }: NavLinkProps) {
   return (
     <Link
       href={href}
-      className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-full
+      className={`nav-link relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-full
         ${
           isActive
-            ? "text-white bg-white/10 backdrop-blur-sm"
+            ? "nav-link-active text-white bg-white/10 backdrop-blur-sm"
             : "text-neutral-300 hover:text-white hover:bg-white/5"
         }`}
     >
@@ -29,7 +30,7 @@ function NavLink({ href, children, isActive }: NavLinkProps) {
       {isActive && (
         <motion.div
           layoutId="activeNav"
-          className="absolute inset-0 rounded-full bg-gradient-to-r from-primary-500/20 to-secondary-500/20 -z-10"
+          className="nav-active-bg absolute inset-0 rounded-full bg-gradient-to-r from-primary-500/20 to-secondary-500/20 -z-10"
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       )}
@@ -74,7 +75,7 @@ export function Header({
       className="fixed left-0 right-0 z-50"
     >
       {/* Glass background - hauteur standard */}
-      <div className="absolute inset-x-0 top-0 h-16 lg:h-18 bg-black/80 backdrop-blur-xl border-b border-white/10" />
+      <div className="absolute inset-x-0 top-0 h-16 lg:h-18 bg-black/80 dark:bg-black/80 light:bg-white/90 backdrop-blur-xl border-b border-white/10 light:border-navy-200/50 light:shadow-md light:shadow-navy-900/5" />
 
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-16 lg:h-18 bg-gradient-to-b from-white/[0.04] to-transparent" />
@@ -92,32 +93,34 @@ export function Header({
               {/* Glow subtil au hover */}
               <div className="pointer-events-none absolute -inset-2 rounded-full bg-primary-500/20 blur-xl opacity-0 transition-opacity duration-500 group-hover:opacity-80" />
 
-              {/* Logo direct sans badge */}
-              <div className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 overflow-hidden">
+              {/* Logo icon */}
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14">
                 <Image
-                  src="/images/logo.svg"
+                  src="/images/horama_logo_trimmed.png"
                   alt="HORAMA"
                   fill
-                  sizes="(max-width: 640px) 56px, (max-width: 1024px) 64px, 80px"
-                  className="object-contain scale-[1.85] translate-y-[5%] brightness-110 contrast-110"
+                  sizes="(max-width: 640px) 40px, (max-width: 1024px) 48px, 56px"
+                  className="object-contain"
                   priority
                 />
               </div>
             </motion.div>
 
             {/* Wordmark */}
-            <div className="hidden sm:flex flex-col leading-none">
-              <span className="text-white font-semibold text-lg lg:text-xl tracking-tight">
-                HORAMA
-              </span>
-              <span className="text-primary-400/80 text-[11px] lg:text-xs font-medium tracking-wide">
-                Vision Souveraine
-              </span>
+            <div className="hidden sm:block relative h-8 lg:h-10 w-24 lg:w-32">
+              <Image
+                src="/images/horama_wordmark.png"
+                alt="HORAMA"
+                fill
+                sizes="(max-width: 1024px) 96px, 128px"
+                className="object-contain"
+                priority
+              />
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
+          <nav className="header-nav hidden lg:flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
             {navLinks.map((link) => (
               <NavLink
                 key={link.href}
@@ -129,11 +132,12 @@ export function Header({
             ))}
           </nav>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
+          {/* Right side: CTA + Mobile Menu */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* CTA Button - hidden on mobile */}
             <Link
               href={ctaHref}
-              className="relative group inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium text-sm transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.35)] hover:scale-105"
+              className="header-cta hidden md:inline-flex relative group items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium text-sm transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.35)] hover:scale-105"
             >
               <span>{ctaText}</span>
               <svg
@@ -150,16 +154,21 @@ export function Header({
                 />
               </svg>
             </Link>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="mobile-menu-btn lg:hidden p-2.5 rounded-full bg-white/5 border border-white/10 text-white transition-all duration-300 hover:bg-white/10"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+            </button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2.5 rounded-full bg-white/5 border border-white/10 text-white transition-all duration-300 hover:bg-white/10"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-          </button>
+          {/* Theme Toggle - position fixe à droite */}
+          <div className="fixed right-4 top-3 z-50">
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -187,7 +196,7 @@ export function Header({
               ))}
               <Link
                 href={ctaHref}
-                className="mt-3 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium text-sm text-center transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.35)]"
+                className="mt-4 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium text-sm text-center transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.35)]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {ctaText}

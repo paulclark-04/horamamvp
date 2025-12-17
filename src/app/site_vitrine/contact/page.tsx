@@ -49,9 +49,9 @@ function AnimatedGradientText({ children }: { children: React.ReactNode }) {
 
 function GridBackground() {
   return (
-    <div className="absolute inset-0 z-0">
+    <div className="absolute inset-0 z-0 grid-background-container">
       <div
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.02] grid-pattern"
         style={{
           backgroundImage: `
             linear-gradient(to right, white 1px, transparent 1px),
@@ -61,7 +61,7 @@ function GridBackground() {
         }}
       />
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 grid-radial-mask"
         style={{
           background: "radial-gradient(ellipse at center, transparent 0%, black 70%)",
         }}

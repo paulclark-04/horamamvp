@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef, useEffect, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
@@ -45,9 +46,9 @@ function AnimatedGradientText({ children }: { children: React.ReactNode }) {
 
 function GridBackground() {
   return (
-    <div className="absolute inset-0 z-0">
+    <div className="absolute inset-0 z-0 grid-background-container">
       <div
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.02] grid-pattern"
         style={{
           backgroundImage: `
             linear-gradient(to right, white 1px, transparent 1px),
@@ -57,7 +58,7 @@ function GridBackground() {
         }}
       />
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 grid-radial-mask"
         style={{
           background: "radial-gradient(ellipse at center, transparent 0%, black 70%)",
         }}
@@ -303,30 +304,15 @@ function FeaturedArticle() {
     >
       <Link href="/site_vitrine/actualites/ces-2026" className="group block">
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-amber-900/30 to-orange-900/20 border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300">
-          {/* Background visual */}
+          {/* Background visual with CES image */}
           <div className="aspect-[21/9] relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-950 to-orange-950">
-              {/* Abstract visual elements */}
-              <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-amber-500/20 to-transparent" />
-              <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
-              <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
-
-              {/* Decorative lines */}
-              {[...Array(5)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute bottom-0 bg-gradient-to-t from-amber-400/60 to-transparent rounded-full"
-                  style={{
-                    left: `${15 + i * 18}%`,
-                    width: `${2 + (i % 2)}px`,
-                    height: `${40 + i * 20}px`,
-                  }}
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={isInView ? { height: `${40 + i * 20}px`, opacity: 1 } : {}}
-                  transition={{ duration: 0.8, delay: 0.3 + i * 0.1 }}
-                />
-              ))}
-            </div>
+            <Image
+              src="/images/ces.png"
+              alt="CES 2026 Las Vegas"
+              fill
+              className="object-cover"
+              priority
+            />
 
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/60 to-transparent" />

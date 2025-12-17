@@ -7,11 +7,32 @@ import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { TrustedBy } from "@/components/ui/LogoCarousel";
 import { ArrowRightIcon, PlayIcon } from "@/components/icons";
 
+// Hook pour détecter le thème
+function useTheme() {
+  const [isLightMode, setIsLightMode] = useState(false);
+
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsLightMode(document.documentElement.classList.contains("light"));
+    };
+
+    checkTheme();
+
+    // Observer les changements de classe sur html
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isLightMode;
+}
+
 // Animated gradient text component
 function GradientText({ children }: { children: React.ReactNode }) {
   return (
     <motion.span
-      className="inline-block bg-gradient-to-r from-primary-400 via-secondary-400 to-primary-400 bg-[length:200%_auto] bg-clip-text text-transparent"
+      className="gradient-text-animated inline-block bg-gradient-to-r from-primary-400 via-secondary-400 to-primary-400 bg-[length:200%_auto] bg-clip-text text-transparent"
       animate={{ backgroundPosition: ["0% center", "200% center"] }}
       transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
     >
@@ -108,6 +129,7 @@ const FLUID_PARTICLES = [
 
 function FluidParticles() {
   const [time, setTime] = useState(0);
+  const isLightMode = useTheme();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -116,6 +138,33 @@ function FluidParticles() {
     return () => clearInterval(interval);
   }, []);
 
+  // Couleurs adaptées au thème
+  const particleColors = isLightMode
+    ? {
+        gradient: "linear-gradient(to bottom right, rgba(13, 148, 136, 0.8), rgba(234, 179, 8, 0.6))",
+        shadow: "rgba(13, 148, 136, 0.5)",
+        baseOpacity: 0.6,
+        opacityRange: 0.3,
+      }
+    : {
+        gradient: "linear-gradient(to bottom right, rgba(96, 165, 250, 0.6), rgba(167, 139, 250, 0.4))",
+        shadow: "rgba(59, 130, 246, 0.3)",
+        baseOpacity: 0.3,
+        opacityRange: 0.2,
+      };
+
+  const bubbleColors = isLightMode
+    ? {
+        primary: "rgba(13, 148, 136, 0.25)",
+        secondary: "rgba(234, 179, 8, 0.2)",
+        accent: "rgba(30, 42, 94, 0.15)",
+      }
+    : {
+        primary: "rgba(59, 130, 246, 0.1)",
+        secondary: "rgba(139, 92, 246, 0.1)",
+        accent: "rgba(96, 165, 250, 0.08)",
+      };
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
       {FLUID_PARTICLES.map((particle) => {
@@ -123,20 +172,24 @@ function FluidParticles() {
         const offsetX = Math.sin(time + particle.id * 0.5) * 20 + Math.cos(time * 0.7 + particle.id * 0.3) * 15;
         const offsetY = Math.cos(time + particle.id * 0.4) * 25 + Math.sin(time * 0.5 + particle.id * 0.6) * 10;
         const scale = 1 + Math.sin(time * 0.8 + particle.id) * 0.3;
-        const opacity = 0.3 + Math.sin(time + particle.id * 0.2) * 0.2;
+        const opacity = particleColors.baseOpacity + Math.sin(time + particle.id * 0.2) * particleColors.opacityRange;
+
+        // Taille plus grande en mode clair
+        const sizeMultiplier = isLightMode ? 2 : 1;
 
         return (
           <div
             key={particle.id}
-            className="absolute rounded-full bg-gradient-to-br from-primary-400/60 to-secondary-400/40"
+            className="fluid-particle absolute rounded-full"
             style={{
               left: `${particle.x}%`,
               top: `${particle.y}%`,
-              width: particle.size * scale,
-              height: particle.size * scale,
+              width: particle.size * scale * sizeMultiplier,
+              height: particle.size * scale * sizeMultiplier,
               transform: `translate(-50%, -50%) translate(${offsetX}px, ${offsetY}px)`,
               opacity: opacity,
-              boxShadow: `0 0 ${particle.size * 2}px rgba(var(--color-primary-500), 0.3)`,
+              background: particleColors.gradient,
+              boxShadow: `0 0 ${particle.size * 3}px ${particleColors.shadow}`,
               transition: "transform 0.1s ease-out",
             }}
           />
@@ -145,31 +198,31 @@ function FluidParticles() {
 
       {/* Grandes bulles floues en arrière-plan */}
       <motion.div
-        className="absolute w-[300px] h-[300px] rounded-full bg-primary-500/10 blur-[80px]"
+        className="glow-bubble glow-bubble-primary absolute w-[300px] h-[300px] rounded-full blur-[80px]"
         animate={{
           x: [0, 100, 50, 0],
           y: [0, 50, 100, 0],
         }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        style={{ left: "10%", top: "20%" }}
+        style={{ left: "10%", top: "20%", backgroundColor: bubbleColors.primary }}
       />
       <motion.div
-        className="absolute w-[250px] h-[250px] rounded-full bg-secondary-500/10 blur-[60px]"
+        className="glow-bubble glow-bubble-secondary absolute w-[250px] h-[250px] rounded-full blur-[60px]"
         animate={{
           x: [0, -80, -40, 0],
           y: [0, 80, 40, 0],
         }}
         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        style={{ right: "15%", top: "40%" }}
+        style={{ right: "15%", top: "40%", backgroundColor: bubbleColors.secondary }}
       />
       <motion.div
-        className="absolute w-[200px] h-[200px] rounded-full bg-primary-400/8 blur-[50px]"
+        className="glow-bubble glow-bubble-accent absolute w-[200px] h-[200px] rounded-full blur-[50px]"
         animate={{
           x: [0, 60, -30, 0],
           y: [0, -60, 30, 0],
         }}
         transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-        style={{ left: "40%", bottom: "20%" }}
+        style={{ left: "40%", bottom: "20%", backgroundColor: bubbleColors.accent }}
       />
     </div>
   );
@@ -210,14 +263,35 @@ const NEURAL_CONNECTIONS = [
 ];
 
 function NeuralNetwork() {
+  const isLightMode = useTheme();
+
+  // Couleurs adaptées au thème
+  const colors = isLightMode
+    ? {
+        lineStart: "rgba(13, 148, 136, 0.6)",
+        lineEnd: "rgba(234, 179, 8, 0.5)",
+        nodeColor: "rgba(13, 148, 136, 0.7)",
+        baseOpacity: 0.2,
+        animateOpacity: [0.2, 0.5, 0.2],
+        nodeOpacity: [0.4, 0.8, 0.4],
+      }
+    : {
+        lineStart: "rgba(59, 130, 246, 0.5)",
+        lineEnd: "rgba(139, 92, 246, 0.5)",
+        nodeColor: "rgba(59, 130, 246, 0.5)",
+        baseOpacity: 0.1,
+        animateOpacity: [0.1, 0.3, 0.1],
+        nodeOpacity: [0.3, 0.6, 0.3],
+      };
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <svg className="absolute inset-0 w-full h-full">
-        {/* Gradient definition */}
+        {/* Gradient definition - dynamique selon le thème */}
         <defs>
           <linearGradient id="neural-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgb(var(--color-primary-500))" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="rgb(var(--color-secondary-500))" stopOpacity="0.5" />
+            <stop offset="0%" stopColor={colors.lineStart} />
+            <stop offset="100%" stopColor={colors.lineEnd} />
           </linearGradient>
         </defs>
 
@@ -230,9 +304,9 @@ function NeuralNetwork() {
             x2={`${NEURAL_NODES[conn.to].x}%`}
             y2={`${NEURAL_NODES[conn.to].y}%`}
             stroke="url(#neural-gradient)"
-            strokeWidth="1"
-            initial={{ opacity: 0.1 }}
-            animate={{ opacity: [0.1, 0.3, 0.1] }}
+            strokeWidth={isLightMode ? "1.5" : "1"}
+            initial={{ opacity: colors.baseOpacity }}
+            animate={{ opacity: colors.animateOpacity }}
             transition={{
               duration: conn.duration,
               repeat: Infinity,
@@ -246,15 +320,19 @@ function NeuralNetwork() {
       {NEURAL_NODES.map((node) => (
         <motion.div
           key={node.id}
-          className="absolute w-2 h-2 rounded-full bg-primary-500/50"
+          className="absolute rounded-full"
           style={{
             left: `${node.x}%`,
             top: `${node.y}%`,
             transform: "translate(-50%, -50%)",
+            width: isLightMode ? "10px" : "8px",
+            height: isLightMode ? "10px" : "8px",
+            backgroundColor: colors.nodeColor,
+            boxShadow: isLightMode ? `0 0 8px ${colors.nodeColor}` : "none",
           }}
           animate={{
             scale: [1, 1.5, 1],
-            opacity: [0.3, 0.6, 0.3],
+            opacity: colors.nodeOpacity,
           }}
           transition={{
             duration: node.duration,
@@ -271,6 +349,7 @@ function NeuralNetwork() {
 function MouseFollowGlow({ containerRef }: { containerRef: React.RefObject<HTMLElement | null> }) {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const isLightMode = useTheme();
 
   const smoothX = useSpring(mouseX, { stiffness: 100, damping: 30 });
   const smoothY = useSpring(mouseY, { stiffness: 100, damping: 30 });
@@ -290,6 +369,10 @@ function MouseFollowGlow({ containerRef }: { containerRef: React.RefObject<HTMLE
     }
   }, [containerRef, mouseX, mouseY]);
 
+  const glowColor = isLightMode
+    ? "radial-gradient(circle, rgba(13, 148, 136, 0.2) 0%, transparent 70%)"
+    : "radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)";
+
   return (
     <motion.div
       className="absolute w-[500px] h-[500px] rounded-full pointer-events-none"
@@ -298,7 +381,7 @@ function MouseFollowGlow({ containerRef }: { containerRef: React.RefObject<HTMLE
         y: smoothY,
         translateX: "-50%",
         translateY: "-50%",
-        background: "radial-gradient(circle, rgba(var(--color-primary-500), 0.15) 0%, transparent 70%)",
+        background: glowColor,
       }}
     />
   );
@@ -306,6 +389,7 @@ function MouseFollowGlow({ containerRef }: { containerRef: React.RefObject<HTMLE
 
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const isLightMode = useTheme();
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
@@ -313,6 +397,26 @@ export function HeroSection() {
 
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
+  // Couleurs des glow orbs selon le thème
+  const glowOrbColors = isLightMode
+    ? {
+        primary: "rgba(13, 148, 136, 0.3)",
+        secondary: "rgba(234, 179, 8, 0.25)",
+        primaryOpacity: [0.4, 0.6, 0.4],
+        secondaryOpacity: [0.3, 0.5, 0.3],
+      }
+    : {
+        primary: "rgba(59, 130, 246, 0.2)",
+        secondary: "rgba(139, 92, 246, 0.2)",
+        primaryOpacity: [0.3, 0.5, 0.3],
+        secondaryOpacity: [0.2, 0.4, 0.2],
+      };
+
+  // Grid pattern selon le thème
+  const gridPattern = isLightMode
+    ? "linear-gradient(rgba(13, 148, 136, 0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(13, 148, 136, 0.06)_1px,transparent_1px)"
+    : "linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)";
 
   return (
     <section
@@ -322,21 +426,26 @@ export function HeroSection() {
       {/* Background with parallax */}
       <motion.div style={{ y }} className="absolute inset-0 -z-10">
         {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-950/80 via-background to-background" />
+        <div className="hero-base-gradient absolute inset-0 bg-gradient-to-b from-primary-950/80 via-background to-background" />
 
         {/* Grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)]" />
+        <div
+          className="absolute inset-0 bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)]"
+          style={{ backgroundImage: gridPattern }}
+        />
 
         {/* Glow orbs */}
         <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          animate={{ scale: [1, 1.2, 1], opacity: glowOrbColors.primaryOpacity }}
           transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-primary-500/20 blur-[128px]"
+          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full blur-[128px]"
+          style={{ backgroundColor: glowOrbColors.primary }}
         />
         <motion.div
-          animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
+          animate={{ scale: [1.2, 1, 1.2], opacity: glowOrbColors.secondaryOpacity }}
           transition={{ duration: 10, repeat: Infinity }}
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-secondary-500/20 blur-[128px]"
+          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[128px]"
+          style={{ backgroundColor: glowOrbColors.secondary }}
         />
 
         {/* Neural Network effect */}

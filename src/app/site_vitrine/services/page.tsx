@@ -3,6 +3,26 @@
 import Link from "next/link";
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
+
+// Hook pour détecter le thème
+function useTheme() {
+  const [isLightMode, setIsLightMode] = useState(false);
+
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsLightMode(document.documentElement.classList.contains("light"));
+    };
+
+    checkTheme();
+
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isLightMode;
+}
 import {
   ArrowRightIcon,
   TargetIcon,
@@ -28,10 +48,10 @@ function AnimatedGradientText({ children }: { children: React.ReactNode }) {
 // Grid Background Component
 function GridBackground() {
   return (
-    <div className="absolute inset-0 z-0">
+    <div className="absolute inset-0 z-0 grid-background-container">
       {/* Grid pattern */}
       <div
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.02] grid-pattern"
         style={{
           backgroundImage: `
             linear-gradient(to right, white 1px, transparent 1px),
@@ -42,7 +62,7 @@ function GridBackground() {
       />
       {/* Radial gradient mask */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 grid-radial-mask"
         style={{
           background: "radial-gradient(ellipse at center, transparent 0%, black 70%)",
         }}
@@ -284,6 +304,48 @@ interface ServiceCardProps {
   index: number;
 }
 
+// Blob animé pour chaque section
+function SectionBlob({ color, position }: { color: "blue" | "purple" | "cyan"; position: "left" | "right" }) {
+  const isLightMode = useTheme();
+
+  const blobColors = {
+    blue: {
+      dark: "rgba(59, 130, 246, 0.1)",
+      light: "rgba(13, 148, 136, 0.15)",
+    },
+    purple: {
+      dark: "rgba(139, 92, 246, 0.1)",
+      light: "rgba(234, 179, 8, 0.12)",
+    },
+    cyan: {
+      dark: "rgba(34, 211, 238, 0.1)",
+      light: "rgba(30, 42, 94, 0.1)",
+    },
+  };
+
+  const positionClasses = position === "left"
+    ? "left-0 -translate-x-1/2"
+    : "right-0 translate-x-1/2";
+
+  const bgColor = isLightMode ? blobColors[color].light : blobColors[color].dark;
+
+  return (
+    <motion.div
+      className={`section-blob section-blob-${color} absolute top-1/2 -translate-y-1/2 ${positionClasses} w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none`}
+      style={{ backgroundColor: bgColor }}
+      animate={{
+        scale: [1, 1.3, 1],
+        opacity: [0.6, 1, 0.6],
+      }}
+      transition={{
+        duration: 10,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    />
+  );
+}
+
 function ServiceCard({
   id,
   icon,
@@ -305,30 +367,39 @@ function ServiceCard({
       bg: "from-primary-500/10 to-transparent",
       icon: "text-primary-400 bg-primary-500/10",
       accent: "text-primary-400",
+      sectionBg: "bg-gradient-to-br from-primary-500/[0.03] via-transparent to-transparent",
+      sectionBgLight: "from-teal-500/[0.05] via-transparent to-transparent",
     },
     purple: {
       border: "border-secondary-500/20 hover:border-secondary-500/40",
       bg: "from-secondary-500/10 to-transparent",
       icon: "text-secondary-400 bg-secondary-500/10",
       accent: "text-secondary-400",
+      sectionBg: "bg-gradient-to-bl from-secondary-500/[0.03] via-transparent to-transparent",
+      sectionBgLight: "from-amber-500/[0.05] via-transparent to-transparent",
     },
     cyan: {
       border: "border-cyan-500/20 hover:border-cyan-500/40",
       bg: "from-cyan-500/10 to-transparent",
       icon: "text-cyan-400 bg-cyan-500/10",
       accent: "text-cyan-400",
+      sectionBg: "bg-gradient-to-br from-cyan-500/[0.03] via-transparent to-transparent",
+      sectionBgLight: "from-navy-500/[0.03] via-transparent to-transparent",
     },
   };
 
   const colors = colorClasses[color];
+  const blobPosition = index % 2 === 0 ? "right" : "left";
 
   return (
     <section
       ref={ref}
       id={id}
-      className="py-16 border-b border-neutral-800/50 last:border-b-0"
+      className={`service-section service-section-${color} relative py-16 border-b border-neutral-800/50 last:border-b-0 overflow-hidden ${colors.sectionBg}`}
       style={{ scrollMarginTop: "180px" }}
     >
+      {/* Blob animé en arrière-plan */}
+      <SectionBlob color={color} position={blobPosition} />
       <div className="container-content">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
