@@ -2,6 +2,8 @@
 
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { AnnouncementProvider } from "@/contexts/AnnouncementContext";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   AnnouncementBanner,
   HeroSection,
@@ -19,53 +21,57 @@ import {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Announcement Banner - Fixed at top */}
-      <AnnouncementBanner
-        badge="Nouveau"
-        text="HORAMA sélectionné pour le CES 2026 Las Vegas"
-        linkText="En savoir plus"
-        href="/site_vitrine/actualites"
-      />
+    <AnnouncementProvider initialVisible={true}>
+      <div className="min-h-screen bg-background">
+        {/* Announcement Banner - Fixed at top */}
+        <AnnouncementBanner
+          badge="Nouveau"
+          text="HORAMA sélectionné pour le CES 2026 Las Vegas"
+          linkText="En savoir plus"
+          href="/site_vitrine/actualites"
+        />
 
-      <Header />
+        <Header />
 
-      <main>
-        {/* Hero - Impact immédiat */}
-        <HeroSection />
+        <PageTransition>
+          <main>
+          {/* Hero - Impact immédiat */}
+          <HeroSection />
 
-        {/* Problem - Pourquoi nous ? */}
-        <ProblemSection />
+          {/* Problem - Pourquoi nous ? */}
+          <ProblemSection />
 
-        {/* Services - Ce qu'on fait */}
-        <ServicesSection />
+          {/* Services - Ce qu'on fait */}
+          <ServicesSection />
 
-        {/* Stats - Preuves chiffrées */}
-        <StatsSection />
+          {/* Stats - Preuves chiffrées */}
+          <StatsSection />
 
-        {/* Testimonials - Social proof */}
-        <TestimonialsSection />
+          {/* Testimonials - Social proof */}
+          <TestimonialsSection />
 
-        {/* Methodology - Comment on travaille */}
-        <MethodologySection />
+          {/* Methodology - Comment on travaille */}
+          <MethodologySection />
 
-        {/* Comparison - vs Concurrence */}
-        <ComparisonSection />
+          {/* Comparison - vs Concurrence */}
+          <ComparisonSection />
 
-        {/* Technologies - Stack technique */}
-        <TechnologiesSection />
+          {/* Technologies - Stack technique */}
+          <TechnologiesSection />
 
-        {/* Team - Qui sommes-nous */}
-        <TeamSection />
+          {/* Team - Qui sommes-nous */}
+          <TeamSection />
 
-        {/* FAQ - Questions fréquentes */}
-        <FAQSection />
+          {/* FAQ - Questions fréquentes */}
+          <FAQSection />
 
-        {/* CTA Final - Conversion */}
-        <CTASection />
-      </main>
+          {/* CTA Final - Conversion */}
+          <CTASection />
+          </main>
+        </PageTransition>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </AnnouncementProvider>
   );
 }

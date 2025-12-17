@@ -1,5 +1,8 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
+import { useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
 import {
   ArrowRightIcon,
   TargetIcon,
@@ -10,40 +13,98 @@ import {
   ShieldIcon,
   CheckIcon,
 } from "@/components/icons";
+import { FadeIn, GlowingOrb, StaggerContainer, staggerItem } from "@/components/ui/MotionWrapper";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
-// Page Metadata
-export const metadata: Metadata = {
-  title: "Services",
-  description:
-    "Solutions Computer Vision completes : Detection, Inspection Visuelle, OCR, Edge AI, MLOps On-Prem. Deploiement souverain et securise.",
-};
-
-// Hero Section
-function HeroSection() {
+// Page Header (simple, adapté)
+function PageHeader() {
   return (
-    <section className="relative pt-16 overflow-hidden">
-      <div className="absolute inset-0 hero-gradient" />
-      <div className="hero-glow" />
+    <section className="pt-24 pb-12 relative overflow-hidden">
+      <GlowingOrb className="top-0 right-1/4 -translate-y-1/2" color="blue" size="md" />
+      <GlowingOrb className="bottom-0 left-1/4 translate-y-1/2" color="purple" size="sm" />
 
-      <div className="relative z-10 container-content text-center py-32 md:py-40">
-        <p className="text-accent text-sm font-medium mb-4">Nos Services</p>
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-6 max-w-4xl mx-auto">
-          Solutions Computer Vision souveraines
-        </h1>
-        <p className="text-lg md:text-xl text-secondary max-w-3xl mx-auto mb-10">
-          De la conception a la production industrielle, une approche complete et securisee
-          pour vos projets de vision par ordinateur.
-        </p>
-        <Link href="/site_vitrine/contact" className="btn-primary px-8 py-4">
-          Demander un diagnostic gratuit
-        </Link>
+      <div className="container-content relative z-10">
+        <FadeIn className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 mb-6">
+            <ChipIcon className="w-4 h-4 text-primary-400" />
+            <span className="text-primary-400 text-sm font-medium">Nos Services</span>
+          </div>
+
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Solutions <span className="text-primary-400">Computer Vision</span> souveraines
+          </h1>
+
+          <p className="text-lg text-neutral-300 leading-relaxed mb-8">
+            De la conception a la production industrielle, une approche complete et securisee
+            pour vos projets de vision par ordinateur.
+          </p>
+
+          <div className="flex flex-wrap gap-4">
+            <Link
+              href="/site_vitrine/contact"
+              className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold text-sm transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:scale-[1.02]"
+            >
+              Demander un diagnostic
+              <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+            <button
+              onClick={() => {
+                const element = document.getElementById("detection");
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white font-medium text-sm hover:bg-white/5 transition-all duration-300"
+            >
+              Voir nos services
+            </button>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );
 }
 
-// Service Detail Component
-interface ServiceDetailProps {
+// Services Navigation (sticky)
+function ServicesNav() {
+  const services = [
+    { id: "detection", label: "Detection" },
+    { id: "inspection", label: "Inspection" },
+    { id: "ocr", label: "OCR" },
+    { id: "edge", label: "Edge AI" },
+    { id: "mlops", label: "MLOps" },
+  ];
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  return (
+    <nav className="sticky top-16 z-40 bg-black/95 backdrop-blur-xl border-b border-white/10">
+      <div className="container-content py-3">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          {services.map((service) => (
+            <a
+              key={service.id}
+              href={`#${service.id}`}
+              onClick={(e) => scrollToSection(e, service.id)}
+              className="px-4 py-2 rounded-full text-sm font-medium text-neutral-400 hover:text-white hover:bg-white/10 transition-all duration-300 whitespace-nowrap"
+            >
+              {service.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// Service Card Component
+interface ServiceCardProps {
   id: string;
   icon: React.ReactNode;
   title: string;
@@ -52,10 +113,11 @@ interface ServiceDetailProps {
   solutions: string[];
   results: { label: string; value: string }[];
   deployment: string[];
-  reversed?: boolean;
+  color: "blue" | "purple" | "cyan";
+  index: number;
 }
 
-function ServiceDetail({
+function ServiceCard({
   id,
   icon,
   title,
@@ -64,82 +126,152 @@ function ServiceDetail({
   solutions,
   results,
   deployment,
-  reversed = false,
-}: ServiceDetailProps) {
+  color,
+  index,
+}: ServiceCardProps) {
+  const ref = useRef<HTMLElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  const colorClasses = {
+    blue: {
+      border: "border-primary-500/20 hover:border-primary-500/40",
+      bg: "from-primary-500/10 to-transparent",
+      icon: "text-primary-400 bg-primary-500/10",
+      accent: "text-primary-400",
+    },
+    purple: {
+      border: "border-secondary-500/20 hover:border-secondary-500/40",
+      bg: "from-secondary-500/10 to-transparent",
+      icon: "text-secondary-400 bg-secondary-500/10",
+      accent: "text-secondary-400",
+    },
+    cyan: {
+      border: "border-cyan-500/20 hover:border-cyan-500/40",
+      bg: "from-cyan-500/10 to-transparent",
+      icon: "text-cyan-400 bg-cyan-500/10",
+      accent: "text-cyan-400",
+    },
+  };
+
+  const colors = colorClasses[color];
+
   return (
-    <section id={id} className="section-lg bg-background border-t border-neutral-800">
+    <section
+      ref={ref}
+      id={id}
+      className="py-16 border-b border-neutral-800/50 last:border-b-0"
+      style={{ scrollMarginTop: "180px" }}
+    >
       <div className="container-content">
-        <div className={`flex flex-col ${reversed ? "lg:flex-row-reverse" : "lg:flex-row"} gap-12 lg:gap-20`}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="grid lg:grid-cols-2 gap-10"
+        >
           {/* Left - Content */}
-          <div className="flex-1">
+          <div>
             <div className="flex items-center gap-4 mb-6">
-              <div className="icon-box icon-box-primary">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colors.icon}`}>
                 {icon}
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-primary">{title}</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">{title}</h2>
             </div>
-            <p className="text-secondary leading-relaxed mb-8">{description}</p>
 
-            {/* Problems */}
-            <div className="mb-8">
-              <h3 className="text-primary font-semibold mb-4">Problematiques adressees</h3>
-              <ul className="space-y-2">
+            <p className="text-neutral-300 leading-relaxed mb-8">{description}</p>
+
+            {/* Problems & Solutions Grid */}
+            <div className="grid sm:grid-cols-2 gap-6 mb-8">
+              {/* Problems */}
+              <div className="space-y-3">
+                <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">
+                  Problematiques
+                </h3>
                 {problems.map((problem, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <span className="text-error mt-1">•</span>
-                    <span className="text-secondary text-sm">{problem}</span>
-                  </li>
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.4, delay: 0.2 + idx * 0.05 }}
+                    className="flex items-start gap-2"
+                  >
+                    <span className="text-red-400 mt-1">×</span>
+                    <span className="text-neutral-400 text-sm">{problem}</span>
+                  </motion.div>
                 ))}
-              </ul>
-            </div>
+              </div>
 
-            {/* Solutions */}
-            <div className="mb-8">
-              <h3 className="text-primary font-semibold mb-4">Nos solutions</h3>
-              <ul className="space-y-2">
+              {/* Solutions */}
+              <div className="space-y-3">
+                <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">
+                  Solutions
+                </h3>
                 {solutions.map((solution, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <CheckIcon className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                    <span className="text-secondary text-sm">{solution}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Right - Results & Deployment */}
-          <div className="flex-1 space-y-6">
-            {/* Results Card */}
-            <div className="card p-8">
-              <h3 className="text-primary font-semibold mb-6">Resultats</h3>
-              <div className="grid grid-cols-2 gap-6">
-                {results.map((result, idx) => (
-                  <div key={idx}>
-                    <div className="text-2xl md:text-3xl font-bold text-accent mb-1">{result.value}</div>
-                    <div className="text-muted text-sm">{result.label}</div>
-                  </div>
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.4, delay: 0.3 + idx * 0.05 }}
+                    className="flex items-start gap-2"
+                  >
+                    <CheckIcon className={`w-4 h-4 ${colors.accent} shrink-0 mt-0.5`} />
+                    <span className="text-neutral-300 text-sm">{solution}</span>
+                  </motion.div>
                 ))}
               </div>
             </div>
 
-            {/* Deployment Card */}
-            <div className="card p-8">
-              <h3 className="text-primary font-semibold mb-4">Deploiement</h3>
+            {/* Deployment Tags */}
+            <div>
+              <h3 className="text-neutral-500 text-xs uppercase tracking-wider mb-3">Deploiement</h3>
               <div className="flex flex-wrap gap-2">
                 {deployment.map((item, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-neutral-800 rounded-full text-secondary text-sm">
+                  <span
+                    key={idx}
+                    className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 text-xs"
+                  >
                     {item}
                   </span>
                 ))}
               </div>
             </div>
+          </div>
 
-            <Link href="/site_vitrine/contact" className="btn-accent w-full justify-center">
+          {/* Right - Results Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className={`relative p-6 md:p-8 rounded-2xl bg-gradient-to-br ${colors.bg} border ${colors.border} backdrop-blur-sm`}
+          >
+            <h3 className="text-white font-semibold mb-6">Resultats mesures</h3>
+
+            <div className="grid grid-cols-2 gap-6">
+              {results.map((result, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                  transition={{ duration: 0.4, delay: 0.4 + idx * 0.1 }}
+                  className="text-center p-4 rounded-xl bg-white/5"
+                >
+                  <div className={`text-2xl md:text-3xl font-bold ${colors.accent} mb-1`}>
+                    {result.value}
+                  </div>
+                  <div className="text-neutral-400 text-sm">{result.label}</div>
+                </motion.div>
+              ))}
+            </div>
+
+            <Link
+              href="/site_vitrine/contact"
+              className={`mt-6 w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border ${colors.border} text-white font-medium text-sm hover:bg-white/5 transition-all duration-300`}
+            >
               En savoir plus
               <ArrowRightIcon className="w-4 h-4" />
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
@@ -147,56 +279,85 @@ function ServiceDetail({
 
 // Deployment Options Section
 function DeploymentSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   const options = [
     {
       title: "Local / On-Premises",
+      icon: <ServerIcon className="w-6 h-6" />,
       features: [
         "Controle total de l'infrastructure",
         "Maitrise complete des donnees",
         "Latence ultra-faible",
         "Conformite reglementaire maximale",
       ],
+      color: "blue" as const,
     },
     {
       title: "Cloud Souverain",
+      icon: <ShieldIcon className="w-6 h-6" />,
       features: [
         "Hebergement certifie europeen",
         "Certification SecNumCloud",
         "Chiffrement de bout en bout",
         "Traces d'audit completes",
       ],
+      color: "purple" as const,
     },
   ];
 
+  const colorClasses = {
+    blue: "from-primary-500/20 to-primary-600/5 border-primary-500/20 hover:border-primary-500/40",
+    purple: "from-secondary-500/20 to-secondary-600/5 border-secondary-500/20 hover:border-secondary-500/40",
+  };
+
+  const iconClasses = {
+    blue: "text-primary-400",
+    purple: "text-secondary-400",
+  };
+
   return (
-    <section className="section-lg hero-gradient">
-      <div className="container-content">
-        <div className="text-center mb-12">
-          <p className="text-accent text-sm font-medium mb-3">Options de Deploiement</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+    <section ref={ref} className="py-20 relative overflow-hidden">
+      <GlowingOrb className="top-1/2 left-0 -translate-x-1/2 -translate-y-1/2" color="blue" size="lg" />
+      <GlowingOrb className="top-1/2 right-0 translate-x-1/2 -translate-y-1/2" color="purple" size="lg" />
+
+      <div className="container-content relative z-10">
+        <FadeIn className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-500/10 border border-secondary-500/20 mb-6">
+            <ShieldIcon className="w-4 h-4 text-secondary-400" />
+            <span className="text-secondary-400 text-sm font-medium">Deploiement</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Choisissez votre mode de deploiement
           </h2>
-          <p className="text-secondary max-w-2xl mx-auto">
+          <p className="text-neutral-400 max-w-2xl mx-auto">
             Selon vos contraintes de securite et de performance, nous adaptons notre deploiement.
           </p>
-        </div>
+        </FadeIn>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {options.map((option, idx) => (
-            <div key={idx} className="card p-8">
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              className={`p-6 md:p-8 rounded-2xl bg-gradient-to-br ${colorClasses[option.color]} border backdrop-blur-sm transition-all duration-300 hover:translate-y-[-4px]`}
+            >
               <div className="flex items-center gap-3 mb-6">
-                <ShieldIcon className="w-6 h-6 text-accent" />
-                <h3 className="text-xl font-semibold text-primary">{option.title}</h3>
+                <div className={iconClasses[option.color]}>{option.icon}</div>
+                <h3 className="text-xl font-semibold text-white">{option.title}</h3>
               </div>
               <ul className="space-y-4">
                 {option.features.map((feature, fidx) => (
                   <li key={fidx} className="flex items-center gap-3">
-                    <CheckIcon className="w-5 h-5 text-success shrink-0" />
-                    <span className="text-secondary">{feature}</span>
+                    <CheckIcon className="w-5 h-5 text-green-400 shrink-0" />
+                    <span className="text-neutral-300">{feature}</span>
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -207,29 +368,40 @@ function DeploymentSection() {
 // CTA Section
 function CTASection() {
   return (
-    <section className="section-lg bg-background border-t border-neutral-800">
-      <div className="container-content text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-primary mb-6">
-          Pret a deployer votre solution ?
-        </h2>
-        <p className="text-secondary text-lg max-w-2xl mx-auto mb-10">
-          Contactez-nous pour un diagnostic gratuit de vos besoins en Computer Vision.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/site_vitrine/contact" className="btn-primary px-8 py-4">
-            Demander un diagnostic
-          </Link>
-          <Link href="/site_vitrine/expertise" className="btn-outline px-8 py-4">
-            Voir notre expertise
-          </Link>
-        </div>
+    <section className="py-20 bg-gradient-to-b from-background to-neutral-950 relative overflow-hidden">
+      <GlowingOrb className="bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2" color="blue" size="lg" />
+
+      <div className="container-content relative z-10 text-center">
+        <FadeIn>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            Pret a deployer votre solution ?
+          </h2>
+          <p className="text-neutral-400 text-lg max-w-2xl mx-auto mb-10">
+            Contactez-nous pour un diagnostic gratuit de vos besoins en Computer Vision.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/site_vitrine/contact"
+              className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold transition-all duration-300 hover:shadow-[0_0_40px_rgba(59,130,246,0.3)] hover:scale-[1.02]"
+            >
+              Demander un diagnostic
+              <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+            <Link
+              href="/site_vitrine/expertise"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/20 text-white font-medium hover:bg-white/5 transition-all duration-300"
+            >
+              Voir notre expertise
+            </Link>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );
 }
 
 // Services Data
-const services: ServiceDetailProps[] = [
+const services: Omit<ServiceCardProps, "index">[] = [
   {
     id: "detection",
     icon: <TargetIcon className="w-6 h-6" />,
@@ -252,9 +424,10 @@ const services: ServiceDetailProps[] = [
       { value: ">95%", label: "Precision" },
       { value: "<50ms", label: "Latence" },
       { value: "24/7", label: "Fiabilite" },
-      { value: "-40%", label: "Couts surveillance" },
+      { value: "-40%", label: "Couts" },
     ],
     deployment: ["Edge computing", "Serveurs on-prem", "Cameras IP", "IoT"],
+    color: "blue",
   },
   {
     id: "inspection",
@@ -275,13 +448,13 @@ const services: ServiceDetailProps[] = [
       "Systemes d'eclairage adaptatifs",
     ],
     results: [
-      { value: "0.1mm", label: "Detection defauts" },
-      { value: ">1000/h", label: "Pieces inspectees" },
+      { value: "0.1mm", label: "Detection" },
+      { value: ">1000/h", label: "Cadence" },
       { value: "-90%", label: "Faux positifs" },
       { value: "<12 mois", label: "ROI" },
     ],
     deployment: ["Ligne de production", "Systemes PLC", "MES reporting", "Cameras industrielles"],
-    reversed: true,
+    color: "purple",
   },
   {
     id: "ocr",
@@ -297,17 +470,18 @@ const services: ServiceDetailProps[] = [
     ],
     solutions: [
       "OCR multi-langues avance",
-      "Reconnaissance d'ecriture manuscrite",
-      "Extraction de donnees structurees",
-      "Preprocessing d'image adaptatif",
+      "Reconnaissance ecriture manuscrite",
+      "Extraction donnees structurees",
+      "Preprocessing adaptatif",
     ],
     results: [
-      { value: ">99%", label: "Precision texte" },
-      { value: "50+", label: "Langues supportees" },
+      { value: ">99%", label: "Precision" },
+      { value: "50+", label: "Langues" },
       { value: "Temps reel", label: "Traitement" },
-      { value: "-95%", label: "Erreurs saisie" },
+      { value: "-95%", label: "Erreurs" },
     ],
     deployment: ["APIs REST", "Integration ERP/CRM", "Batch processing", "Mobile"],
+    color: "cyan",
   },
   {
     id: "edge",
@@ -322,19 +496,19 @@ const services: ServiceDetailProps[] = [
       "Fiabilite de la connexion",
     ],
     solutions: [
-      "Optimisation de modeles (ONNX/TensorRT)",
+      "Optimisation ONNX/TensorRT",
       "Quantization et pruning",
       "Deploiement multi-plateforme",
       "Edge computing distribue",
     ],
     results: [
       { value: "<10ms", label: "Latence" },
-      { value: "Optimisee", label: "Consommation" },
-      { value: "Offline", label: "Fonctionnement" },
+      { value: "Optimisee", label: "Conso." },
+      { value: "Offline", label: "Mode" },
       { value: "Renforcee", label: "Securite" },
     ],
     deployment: ["NVIDIA Jetson", "Intel NUC", "Google Coral TPU", "Raspberry Pi"],
-    reversed: true,
+    color: "blue",
   },
   {
     id: "mlops",
@@ -355,12 +529,13 @@ const services: ServiceDetailProps[] = [
       "Versioning donnees et modeles",
     ],
     results: [
-      { value: "-70%", label: "Time-to-production" },
+      { value: "-70%", label: "Time-to-prod" },
       { value: ">99.9%", label: "Uptime" },
-      { value: "Auto", label: "Detection derive" },
-      { value: "Conforme", label: "Reglementation" },
+      { value: "Auto", label: "Detection" },
+      { value: "Conforme", label: "Reglement." },
     ],
     deployment: ["Kubernetes", "Docker", "Infrastructure on-prem", "Cloud hybride"],
+    color: "purple",
   },
 ];
 
@@ -368,29 +543,14 @@ const services: ServiceDetailProps[] = [
 export default function ServicesPage() {
   return (
     <>
-      <HeroSection />
+      <PageHeader />
+      <ServicesNav />
 
-      {/* Services Navigation */}
-      <nav className="sticky top-16 z-40 bg-background/80 backdrop-blur-lg border-b border-neutral-800">
-        <div className="container-content py-4">
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide">
-            {services.map((service) => (
-              <a
-                key={service.id}
-                href={`#${service.id}`}
-                className="nav-link whitespace-nowrap px-4 py-2 rounded-full hover:bg-neutral-800/50 transition-colors"
-              >
-                {service.title.split(" ")[0]}
-              </a>
-            ))}
-          </div>
-        </div>
-      </nav>
-
-      {/* Service Details */}
-      {services.map((service) => (
-        <ServiceDetail key={service.id} {...service} />
-      ))}
+      <div id="services" className="bg-background">
+        {services.map((service, index) => (
+          <ServiceCard key={service.id} {...service} index={index} />
+        ))}
+      </div>
 
       <DeploymentSection />
       <CTASection />

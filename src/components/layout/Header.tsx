@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MenuIcon, CloseIcon } from "@/components/icons";
+import { useAnnouncement } from "@/contexts/AnnouncementContext";
 
 interface NavLinkProps {
   href: string;
@@ -47,6 +48,13 @@ export function Header({
 }: HeaderProps) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isVisible, isAnimating } = useAnnouncement();
+
+  // Hauteur du bandeau d'annonce (40px = top-10)
+  const BANNER_HEIGHT = 40;
+
+  // Le header doit être en haut si le bandeau n'est pas visible ou est en train de se fermer
+  const shouldBeAtTop = !isVisible || isAnimating;
 
   const navLinks = [
     { href: "/", label: "Accueil" },
@@ -59,7 +67,12 @@ export function Header({
   ];
 
   return (
-    <header className="fixed top-10 left-0 right-0 z-50">
+    <motion.header
+      initial={{ top: isVisible ? BANNER_HEIGHT : 0 }}
+      animate={{ top: shouldBeAtTop ? 0 : BANNER_HEIGHT }}
+      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+      className="fixed left-0 right-0 z-50"
+    >
       {/* Glass background - hauteur standard */}
       <div className="absolute inset-x-0 top-0 h-16 lg:h-18 bg-black/80 backdrop-blur-xl border-b border-white/10" />
 
@@ -183,6 +196,6 @@ export function Header({
           </motion.div>
         )}
       </div>
-    </header>
+    </motion.header>
   );
 }

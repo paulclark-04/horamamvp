@@ -23,7 +23,7 @@ import { FadeIn, GlowingOrb, StaggerContainer, staggerItem } from "@/components/
 // Page Header (simple, pas de hero)
 function PageHeader() {
   return (
-    <section className="pt-32 pb-16 relative overflow-hidden">
+    <section className="pt-24 pb-16 relative overflow-hidden">
       <GlowingOrb className="top-0 left-1/4 -translate-y-1/2" color="blue" size="md" />
 
       <div className="container-content relative z-10">
