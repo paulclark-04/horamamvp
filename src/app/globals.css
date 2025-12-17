@@ -2981,3 +2981,114 @@ body {
 .light .focus\:border-primary-500\/50:focus {
   border-color: rgba(13, 148, 136, 0.5) !important;
 }
+
+/* =============================================
+   PAGE LÉGALE - MODE CLAIR
+   ============================================= */
+
+/* Tout en blanc */
+.light .legal-page,
+.light .legal-page .legal-hero,
+.light .legal-page .legal-content-section {
+  background: #ffffff !important;
+}
+
+/* Cards légales - fond blanc */
+.light .legal-card,
+.light .legal-card.bg-neutral-900\/50,
+.light .legal-page .legal-card {
+  background: #ffffff !important;
+  border-color: rgba(30, 42, 94, 0.12) !important;
+  box-shadow: 0 4px 24px rgba(30, 42, 94, 0.08) !important;
+}
+
+.light .legal-card .border-b {
+  border-color: rgba(30, 42, 94, 0.1) !important;
+}
+
+/* Titres sections */
+.light .legal-card h2 {
+  color: #0f172a !important;
+}
+
+.light .legal-card h3 {
+  color: #1e2a5e !important;
+}
+
+/* Texte contenu */
+.light .legal-content p,
+.light .legal-content li {
+  color: #334155 !important;
+}
+
+.light .legal-content strong {
+  color: #1e2a5e !important;
+}
+
+/* Icône dans le header */
+.light .legal-card .bg-primary-500\/10 {
+  background: rgba(13, 148, 136, 0.1) !important;
+  border-color: rgba(13, 148, 136, 0.2) !important;
+}
+
+.light .legal-card .text-primary-400 {
+  color: #0d9488 !important;
+}
+
+/* Liens */
+.light .legal-content a {
+  color: #0d9488 !important;
+}
+
+.light .legal-content a:hover {
+  color: #0f766e !important;
+}
+
+/* Navigation rapide */
+.light .legal-nav-link {
+  background: rgba(13, 148, 136, 0.08) !important;
+  border-color: rgba(13, 148, 136, 0.15) !important;
+  color: #1e2a5e !important;
+}
+
+.light .legal-nav-link:hover {
+  background: rgba(13, 148, 136, 0.15) !important;
+  border-color: rgba(13, 148, 136, 0.3) !important;
+  color: #0d9488 !important;
+}
+
+/* Texte italic (date mise à jour) */
+.light .legal-card .italic {
+  color: #64748b !important;
+}
+
+/* =============================================
+   PAGE 404 NOT FOUND - MODE CLAIR
+   ============================================= */
+
+.light .not-found-page {
+  background: #ffffff !important;
+}
+
+.light .not-found-page .text-white {
+  color: #0f172a !important;
+}
+
+/* Hero section légale */
+.light .legal-card h1,
+.light h1.text-white {
+  color: #0f172a !important;
+}
+
+.light .text-neutral-300 {
+  color: #475569 !important;
+}
+
+/* Lien retour */
+.light .text-neutral-400.hover\:text-white {
+  color: #64748b !important;
+}
+
+.light .text-neutral-400.hover\:text-white:hover {
+  color: #0d9488 !important;
+}

@@ -111,11 +111,14 @@ export function Footer() {
             &copy; {currentYear} HORAMA. Tous droits réservés.
           </div>
           <div className="flex items-center gap-6 text-sm">
-            <Link href="/mentions-legales" className="nav-link">
+            <Link href="/site_vitrine/legal#mentions-legales" className="nav-link">
               Mentions légales
             </Link>
-            <Link href="/confidentialite" className="nav-link">
-              Politique de confidentialité
+            <Link href="/site_vitrine/legal#confidentialite" className="nav-link">
+              Confidentialité
+            </Link>
+            <Link href="/site_vitrine/legal#conditions" className="nav-link">
+              CGU
             </Link>
           </div>
         </div>
