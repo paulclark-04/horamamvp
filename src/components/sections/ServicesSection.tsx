@@ -214,17 +214,10 @@ function ServiceDemo({ type, isHovered }: { type: string; isHovered: boolean }) 
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           className="relative w-14 h-14"
         >
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="absolute w-3 h-3 rounded-full bg-orange-500"
-              style={{
-                top: `${50 + 40 * Math.sin((i * 2 * Math.PI) / 3)}%`,
-                left: `${50 + 40 * Math.cos((i * 2 * Math.PI) / 3)}%`,
-                transform: "translate(-50%, -50%)",
-              }}
-            />
-          ))}
+          {/* Positions pré-calculées pour éviter hydration mismatch */}
+          <div className="absolute w-3 h-3 rounded-full bg-orange-500" style={{ top: "50%", left: "90%", transform: "translate(-50%, -50%)" }} />
+          <div className="absolute w-3 h-3 rounded-full bg-orange-500" style={{ top: "84.6%", left: "30%", transform: "translate(-50%, -50%)" }} />
+          <div className="absolute w-3 h-3 rounded-full bg-orange-500" style={{ top: "15.4%", left: "30%", transform: "translate(-50%, -50%)" }} />
         </motion.div>
       </div>
     ),

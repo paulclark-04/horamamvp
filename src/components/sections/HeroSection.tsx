@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { TrustedBy } from "@/components/ui/LogoCarousel";
 import { ArrowRightIcon, PlayIcon } from "@/components/icons";
@@ -68,6 +68,242 @@ function StatCard({ value, suffix, prefix, label, delay }: {
   );
 }
 
+// ============================================
+// FLUID PARTICLES ANIMATION
+// ============================================
+
+// Particules fluides avec positions fixes
+const FLUID_PARTICLES = [
+  { id: 0, x: 8, y: 15, size: 3 },
+  { id: 1, x: 15, y: 45, size: 2.5 },
+  { id: 2, x: 22, y: 75, size: 3.5 },
+  { id: 3, x: 28, y: 25, size: 2 },
+  { id: 4, x: 35, y: 55, size: 4 },
+  { id: 5, x: 42, y: 85, size: 2.5 },
+  { id: 6, x: 48, y: 20, size: 3 },
+  { id: 7, x: 55, y: 50, size: 3.5 },
+  { id: 8, x: 62, y: 80, size: 2 },
+  { id: 9, x: 68, y: 30, size: 4 },
+  { id: 10, x: 75, y: 60, size: 2.5 },
+  { id: 11, x: 82, y: 90, size: 3 },
+  { id: 12, x: 88, y: 40, size: 3.5 },
+  { id: 13, x: 92, y: 70, size: 2 },
+  { id: 14, x: 12, y: 65, size: 2.5 },
+  { id: 15, x: 25, y: 35, size: 3 },
+  { id: 16, x: 38, y: 10, size: 2 },
+  { id: 17, x: 52, y: 40, size: 3.5 },
+  { id: 18, x: 65, y: 15, size: 2.5 },
+  { id: 19, x: 78, y: 45, size: 4 },
+  { id: 20, x: 85, y: 20, size: 2 },
+  { id: 21, x: 95, y: 55, size: 3 },
+  { id: 22, x: 5, y: 80, size: 3.5 },
+  { id: 23, x: 18, y: 5, size: 2.5 },
+  { id: 24, x: 32, y: 70, size: 2 },
+  { id: 25, x: 45, y: 95, size: 3 },
+  { id: 26, x: 58, y: 65, size: 4 },
+  { id: 27, x: 72, y: 85, size: 2.5 },
+  { id: 28, x: 80, y: 10, size: 3 },
+  { id: 29, x: 90, y: 35, size: 2 },
+];
+
+function FluidParticles() {
+  const [time, setTime] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(t => t + 0.02);
+    }, 30);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
+      {FLUID_PARTICLES.map((particle) => {
+        // Mouvement fluide sinusoïdal
+        const offsetX = Math.sin(time + particle.id * 0.5) * 20 + Math.cos(time * 0.7 + particle.id * 0.3) * 15;
+        const offsetY = Math.cos(time + particle.id * 0.4) * 25 + Math.sin(time * 0.5 + particle.id * 0.6) * 10;
+        const scale = 1 + Math.sin(time * 0.8 + particle.id) * 0.3;
+        const opacity = 0.3 + Math.sin(time + particle.id * 0.2) * 0.2;
+
+        return (
+          <div
+            key={particle.id}
+            className="absolute rounded-full bg-gradient-to-br from-primary-400/60 to-secondary-400/40"
+            style={{
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+              width: particle.size * scale,
+              height: particle.size * scale,
+              transform: `translate(-50%, -50%) translate(${offsetX}px, ${offsetY}px)`,
+              opacity: opacity,
+              boxShadow: `0 0 ${particle.size * 2}px rgba(var(--color-primary-500), 0.3)`,
+              transition: "transform 0.1s ease-out",
+            }}
+          />
+        );
+      })}
+
+      {/* Grandes bulles floues en arrière-plan */}
+      <motion.div
+        className="absolute w-[300px] h-[300px] rounded-full bg-primary-500/10 blur-[80px]"
+        animate={{
+          x: [0, 100, 50, 0],
+          y: [0, 50, 100, 0],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+        style={{ left: "10%", top: "20%" }}
+      />
+      <motion.div
+        className="absolute w-[250px] h-[250px] rounded-full bg-secondary-500/10 blur-[60px]"
+        animate={{
+          x: [0, -80, -40, 0],
+          y: [0, 80, 40, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        style={{ right: "15%", top: "40%" }}
+      />
+      <motion.div
+        className="absolute w-[200px] h-[200px] rounded-full bg-primary-400/8 blur-[50px]"
+        animate={{
+          x: [0, 60, -30, 0],
+          y: [0, -60, 30, 0],
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        style={{ left: "40%", bottom: "20%" }}
+      />
+    </div>
+  );
+}
+
+// Neural network animation - positions fixes pour éviter hydration mismatch
+const NEURAL_NODES = [
+  { id: 0, x: 15, y: 25, duration: 2.5, delay: 0 },
+  { id: 1, x: 35, y: 15, duration: 3, delay: 0.5 },
+  { id: 2, x: 55, y: 30, duration: 2.8, delay: 1 },
+  { id: 3, x: 75, y: 20, duration: 3.2, delay: 0.3 },
+  { id: 4, x: 85, y: 45, duration: 2.6, delay: 1.5 },
+  { id: 5, x: 70, y: 65, duration: 3.5, delay: 0.8 },
+  { id: 6, x: 45, y: 55, duration: 2.4, delay: 1.2 },
+  { id: 7, x: 25, y: 70, duration: 3.1, delay: 0.2 },
+  { id: 8, x: 10, y: 50, duration: 2.9, delay: 1.8 },
+  { id: 9, x: 60, y: 80, duration: 3.3, delay: 0.6 },
+  { id: 10, x: 90, y: 75, duration: 2.7, delay: 1.1 },
+  { id: 11, x: 40, y: 85, duration: 3.4, delay: 0.4 },
+];
+
+const NEURAL_CONNECTIONS = [
+  { from: 0, to: 1, duration: 3.5, delay: 0 },
+  { from: 1, to: 2, duration: 4, delay: 0.5 },
+  { from: 2, to: 3, duration: 3.8, delay: 1 },
+  { from: 3, to: 4, duration: 4.2, delay: 0.3 },
+  { from: 4, to: 5, duration: 3.6, delay: 1.5 },
+  { from: 5, to: 6, duration: 4.5, delay: 0.8 },
+  { from: 6, to: 7, duration: 3.9, delay: 1.2 },
+  { from: 7, to: 8, duration: 4.1, delay: 0.2 },
+  { from: 8, to: 0, duration: 3.7, delay: 1.8 },
+  { from: 2, to: 6, duration: 4.3, delay: 0.6 },
+  { from: 5, to: 9, duration: 3.4, delay: 1.1 },
+  { from: 9, to: 10, duration: 4.4, delay: 0.4 },
+  { from: 10, to: 4, duration: 3.3, delay: 1.4 },
+  { from: 6, to: 11, duration: 4.6, delay: 0.9 },
+  { from: 11, to: 9, duration: 3.2, delay: 1.6 },
+];
+
+function NeuralNetwork() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <svg className="absolute inset-0 w-full h-full">
+        {/* Gradient definition */}
+        <defs>
+          <linearGradient id="neural-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgb(var(--color-primary-500))" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="rgb(var(--color-secondary-500))" stopOpacity="0.5" />
+          </linearGradient>
+        </defs>
+
+        {/* Connection lines */}
+        {NEURAL_CONNECTIONS.map((conn, i) => (
+          <motion.line
+            key={i}
+            x1={`${NEURAL_NODES[conn.from].x}%`}
+            y1={`${NEURAL_NODES[conn.from].y}%`}
+            x2={`${NEURAL_NODES[conn.to].x}%`}
+            y2={`${NEURAL_NODES[conn.to].y}%`}
+            stroke="url(#neural-gradient)"
+            strokeWidth="1"
+            initial={{ opacity: 0.1 }}
+            animate={{ opacity: [0.1, 0.3, 0.1] }}
+            transition={{
+              duration: conn.duration,
+              repeat: Infinity,
+              delay: conn.delay,
+            }}
+          />
+        ))}
+      </svg>
+
+      {/* Nodes */}
+      {NEURAL_NODES.map((node) => (
+        <motion.div
+          key={node.id}
+          className="absolute w-2 h-2 rounded-full bg-primary-500/50"
+          style={{
+            left: `${node.x}%`,
+            top: `${node.y}%`,
+            transform: "translate(-50%, -50%)",
+          }}
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: node.duration,
+            repeat: Infinity,
+            delay: node.delay,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Mouse follow glow effect
+function MouseFollowGlow({ containerRef }: { containerRef: React.RefObject<HTMLElement | null> }) {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const smoothX = useSpring(mouseX, { stiffness: 100, damping: 30 });
+  const smoothY = useSpring(mouseY, { stiffness: 100, damping: 30 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      mouseX.set(e.clientX - rect.left);
+      mouseY.set(e.clientY - rect.top);
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("mousemove", handleMouseMove);
+      return () => container.removeEventListener("mousemove", handleMouseMove);
+    }
+  }, [containerRef, mouseX, mouseY]);
+
+  return (
+    <motion.div
+      className="absolute w-[500px] h-[500px] rounded-full pointer-events-none"
+      style={{
+        x: smoothX,
+        y: smoothY,
+        translateX: "-50%",
+        translateY: "-50%",
+        background: "radial-gradient(circle, rgba(var(--color-primary-500), 0.15) 0%, transparent 70%)",
+      }}
+    />
+  );
+}
+
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -102,7 +338,16 @@ export function HeroSection() {
           transition={{ duration: 10, repeat: Infinity }}
           className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-secondary-500/20 blur-[128px]"
         />
+
+        {/* Neural Network effect */}
+        <NeuralNetwork />
       </motion.div>
+
+      {/* Fluid particles animation */}
+      <FluidParticles />
+
+      {/* Mouse follow glow */}
+      <MouseFollowGlow containerRef={containerRef} />
 
       {/* Main content */}
       <motion.div style={{ opacity }} className="relative z-10 container-content pt-40 pb-20">
