@@ -129,9 +129,11 @@ const FLUID_PARTICLES = [
 
 function FluidParticles() {
   const [time, setTime] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const isLightMode = useTheme();
 
   useEffect(() => {
+    setMounted(true);
     const interval = setInterval(() => {
       setTime(t => t + 0.02);
     }, 30);
@@ -164,6 +166,11 @@ function FluidParticles() {
         secondary: "rgba(139, 92, 246, 0.1)",
         accent: "rgba(96, 165, 250, 0.08)",
       };
+
+  // Ne pas rendre les particules animées côté serveur pour éviter l'hydration mismatch
+  if (!mounted) {
+    return <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]" />;
+  }
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">

@@ -27,7 +27,7 @@ const pageVariants = {
 
 const pageTransition = {
   duration: 0.5,
-  ease: [0.22, 1, 0.36, 1], // Custom smooth ease (ease-out-quint)
+  ease: [0.22, 1, 0.36, 1] as const, // Custom smooth ease (ease-out-quint)
 };
 
 export function PageTransition({ children }: PageTransitionProps) {

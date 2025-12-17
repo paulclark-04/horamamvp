@@ -1,5 +1,4 @@
--- Enable necessary extensions
-create extension if not exists "uuid-ossp";
+-- Enable necessary extensions (using built-in gen_random_uuid instead of uuid-ossp)
 
 -- -----------------------------------------------------------------------------
 -- 1. UTILS (Triggers, Functions)
@@ -31,7 +30,7 @@ create table if not exists public.utilisateurs (
 
 -- Table: leads_contacts
 create table if not exists public.leads_contacts (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   type text not null check (type in ('lead', 'contact')),
   nom text,
   prenom text,
@@ -46,7 +45,7 @@ create table if not exists public.leads_contacts (
 
 -- Table: interactions
 create table if not exists public.interactions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   type text not null check (type in ('call', 'email', 'meeting', 'other')),
   notes text,
   date timestamptz default now(),
@@ -57,7 +56,7 @@ create table if not exists public.interactions (
 
 -- Table: offres_emploi
 create table if not exists public.offres_emploi (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   titre text not null,
   description text,
   statut text not null check (statut in ('draft', 'published', 'archived')) default 'draft',
@@ -67,7 +66,7 @@ create table if not exists public.offres_emploi (
 
 -- Table: candidatures
 create table if not exists public.candidatures (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   nom text not null,
   prenom text not null,
   email text not null,
@@ -80,14 +79,14 @@ create table if not exists public.candidatures (
 
 -- Table: categories (For Articles/Blog)
 create table if not exists public.categories (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   nom text not null unique,
   created_at timestamptz default now()
 );
 
 -- Table: articles
 create table if not exists public.articles (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   titre text not null,
   slug text not null unique,
   contenu text,
@@ -101,7 +100,7 @@ create table if not exists public.articles (
 
 -- Table: elements_media
 create table if not exists public.elements_media (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   nom text not null,
   url text not null,
   type text, -- mime type

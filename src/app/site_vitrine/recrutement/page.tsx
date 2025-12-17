@@ -417,7 +417,20 @@ function ApplicationFormSection() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    nom: "",
+    prenom: "",
+    email: "",
+    telephone: "",
+    poste_vise: "",
+    message: "",
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const updateField = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleFileSelect = (file: File) => {
     // Verifier le type de fichier
@@ -456,18 +469,46 @@ function ApplicationFormSection() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    // Simuler l'envoi (a remplacer par votre API)
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Créer le FormData pour l'envoi
+      const submitData = new FormData();
+      submitData.append("nom", formData.nom);
+      if (formData.prenom) submitData.append("prenom", formData.prenom);
+      submitData.append("email", formData.email);
+      if (selectedFile) submitData.append("cv", selectedFile);
 
-    setIsSubmitting(false);
-    setSubmitSuccess(true);
+      const response = await fetch("/api/candidatures", {
+        method: "POST",
+        body: submitData,
+      });
 
-    // Reset apres 3 secondes
-    setTimeout(() => {
-      setSubmitSuccess(false);
-      setSelectedFile(null);
-    }, 3000);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Erreur lors de l'envoi de la candidature");
+      }
+
+      setSubmitSuccess(true);
+
+      // Reset après 3 secondes
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setSelectedFile(null);
+        setFormData({
+          nom: "",
+          prenom: "",
+          email: "",
+          telephone: "",
+          poste_vise: "",
+          message: "",
+        });
+      }, 3000);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Une erreur est survenue");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -520,24 +561,61 @@ function ApplicationFormSection() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="form-label">Nom complet *</label>
-                    <input type="text" className="form-input" placeholder="NOM Prenom" required />
+                    <label className="form-label">Nom *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="DUPONT"
+                      value={formData.nom}
+                      onChange={(e) => updateField("nom", e.target.value)}
+                      required
+                    />
                   </div>
                   <div>
-                    <label className="form-label">Email *</label>
-                    <input type="email" className="form-input" placeholder="votre@email.com" required />
+                    <label className="form-label">Prénom</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Jean"
+                      value={formData.prenom}
+                      onChange={(e) => updateField("prenom", e.target.value)}
+                    />
                   </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="form-label">Telephone</label>
-                    <input type="tel" className="form-input" placeholder="+33 6 12 34 56 78" />
+                    <label className="form-label">Email *</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      placeholder="votre@email.com"
+                      value={formData.email}
+                      onChange={(e) => updateField("email", e.target.value)}
+                      required
+                    />
                   </div>
                   <div>
-                    <label className="form-label">Poste vise</label>
-                    <input type="text" className="form-input" placeholder="ex: ML Engineer" />
+                    <label className="form-label">Telephone</label>
+                    <input
+                      type="tel"
+                      className="form-input"
+                      placeholder="+33 6 12 34 56 78"
+                      value={formData.telephone}
+                      onChange={(e) => updateField("telephone", e.target.value)}
+                    />
                   </div>
+                </div>
+
+                <div>
+                  <label className="form-label">Poste visé</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="ex: ML Engineer"
+                    value={formData.poste_vise}
+                    onChange={(e) => updateField("poste_vise", e.target.value)}
+                  />
                 </div>
 
                 <div>
@@ -546,8 +624,16 @@ function ApplicationFormSection() {
                     className="form-textarea"
                     rows={3}
                     placeholder="Presentez-vous en quelques mots..."
+                    value={formData.message}
+                    onChange={(e) => updateField("message", e.target.value)}
                   />
                 </div>
+
+                {submitError && (
+                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                    {submitError}
+                  </div>
+                )}
 
                 {/* Zone d'upload CV */}
                 <div>
