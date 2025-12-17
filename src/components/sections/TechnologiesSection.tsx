@@ -164,7 +164,7 @@ function TechBadge({ tech, categorySlug }: { tech: Technology; categorySlug: str
   return (
     <div className="relative" style={{ zIndex: isHovered ? 100 : 1 }}>
       <Link
-        href={`/site_vitrine/technologies#${tech.slug}`}
+        href={`/site_vitrine/expertise#${tech.slug}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="group relative inline-flex items-center gap-2 px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-transparent hover:border-primary-500/30 rounded-full text-neutral-300 hover:text-white text-sm transition-all duration-300"
@@ -213,7 +213,7 @@ function TechBadge({ tech, categorySlug }: { tech: Technology; categorySlug: str
 
           {/* CTA */}
           <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
-            <span className="text-xs text-neutral-500">Cliquer pour en savoir plus</span>
+            <span className="text-xs text-neutral-500">Voir notre expertise</span>
             <span className="text-primary-400 text-sm">→</span>
           </div>
         </div>
@@ -263,7 +263,7 @@ export function TechnologiesSection() {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-white font-semibold">{tech.category}</h3>
                     <Link
-                      href={`/site_vitrine/technologies#${tech.slug}`}
+                      href={`/site_vitrine/expertise#${tech.slug}`}
                       className="text-xs text-primary-400 hover:text-primary-300 transition-colors"
                     >
                       Voir tout →
@@ -285,7 +285,7 @@ export function TechnologiesSection() {
         {/* CTA */}
         <FadeIn delay={0.5} className="text-center mt-12">
           <Link
-            href="/site_vitrine/technologies"
+            href="/site_vitrine/expertise#stack"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-primary-500/30 transition-all duration-300"
           >
             <span>Explorer toute notre stack</span>

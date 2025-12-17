@@ -123,15 +123,15 @@ function FloatingServiceIcon({ icon, label, color, delay, position }: FloatingIc
 // Floating Services Visual Component
 function FloatingServicesVisual() {
   const services = [
-    { icon: <TargetIcon className="w-full h-full" />, label: "Detection", color: "blue" as const, position: { x: "10%", y: "5%" }, delay: 0 },
-    { icon: <SearchIcon className="w-full h-full" />, label: "Inspection", color: "purple" as const, position: { x: "60%", y: "0%" }, delay: 0.1 },
-    { icon: <DocumentIcon className="w-full h-full" />, label: "OCR", color: "cyan" as const, position: { x: "35%", y: "35%" }, delay: 0.2 },
-    { icon: <ChipIcon className="w-full h-full" />, label: "Edge AI", color: "blue" as const, position: { x: "5%", y: "60%" }, delay: 0.3 },
-    { icon: <ServerIcon className="w-full h-full" />, label: "MLOps", color: "purple" as const, position: { x: "55%", y: "65%" }, delay: 0.4 },
+    { icon: <TargetIcon className="w-full h-full" />, label: "Detection", color: "blue" as const, position: { x: "10%", y: "0%" }, delay: 0 },
+    { icon: <SearchIcon className="w-full h-full" />, label: "Inspection", color: "purple" as const, position: { x: "65%", y: "5%" }, delay: 0.1 },
+    { icon: <DocumentIcon className="w-full h-full" />, label: "OCR", color: "cyan" as const, position: { x: "35%", y: "30%" }, delay: 0.2 },
+    { icon: <ChipIcon className="w-full h-full" />, label: "Edge AI", color: "blue" as const, position: { x: "0%", y: "58%" }, delay: 0.3 },
+    { icon: <ServerIcon className="w-full h-full" />, label: "MLOps", color: "purple" as const, position: { x: "58%", y: "62%" }, delay: 0.4 },
   ];
 
   return (
-    <div className="relative h-80 lg:h-96">
+    <div className="relative h-96 lg:h-[450px]">
       {services.map((service, idx) => (
         <FloatingServiceIcon key={idx} {...service} />
       ))}
@@ -166,11 +166,12 @@ function PulseBadge() {
 // Page Header - Split Layout
 function PageHeader() {
   return (
-    <section className="pt-32 pb-20 relative overflow-hidden">
+    <section className="pt-32 pb-32 md:pt-40 md:pb-40 relative overflow-hidden">
       {/* Background */}
       <GridBackground />
       <GlowingOrb className="top-0 left-1/4 -translate-y-1/2" color="blue" size="lg" />
       <GlowingOrb className="bottom-0 right-1/4 translate-y-1/2" color="purple" size="md" />
+      <GlowingOrb className="top-1/2 right-0 translate-x-1/2 -translate-y-1/2" color="blue" size="sm" />
 
       <div className="container-content relative z-10">
         <div className="grid lg:grid-cols-5 gap-12 items-center">
