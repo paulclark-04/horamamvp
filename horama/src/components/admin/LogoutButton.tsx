@@ -5,7 +5,13 @@ import { useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
 
-export function LogoutButton() {
+export function LogoutButton({
+    className,
+    label = "Déconnexion",
+}: {
+    className?: string;
+    label?: string;
+}) {
     const router = useRouter();
     const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -26,9 +32,15 @@ export function LogoutButton() {
             type="button"
             onClick={() => void handleLogout()}
             disabled={isSigningOut}
-            className="w-full rounded-lg px-3 py-2 text-left text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+            className={[
+                "inline-flex items-center justify-center rounded-lg text-theme-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50",
+                "h-10 bg-gray-100 px-4 text-gray-700 hover:bg-gray-200",
+                className,
+            ]
+                .filter(Boolean)
+                .join(" ")}
         >
-            {isSigningOut ? "Déconnexion..." : "Déconnexion"}
+            {isSigningOut ? `${label}...` : label}
         </button>
     );
 }

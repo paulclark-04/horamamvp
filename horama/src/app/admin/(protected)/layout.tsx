@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminLayoutShell } from "@/components/admin/AdminLayoutShell";
 
 export default async function AdminProtectedLayout({
     children,
@@ -8,6 +8,5 @@ export default async function AdminProtectedLayout({
 }) {
     await requireAdmin();
 
-    return <AdminShell>{children}</AdminShell>;
+    return <AdminLayoutShell>{children}</AdminLayoutShell>;
 }
-
