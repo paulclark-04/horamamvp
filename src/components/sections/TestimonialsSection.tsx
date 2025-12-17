@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { QuoteIcon, StarIcon, ArrowRightIcon } from "@/components/icons";
+import { motion } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+import { QuoteIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 
 interface Testimonial {
   id: number;
@@ -50,13 +49,84 @@ const testimonials: Testimonial[] = [
   },
 ];
 
-function TestimonialCard({ testimonial, isActive }: { testimonial: Testimonial; isActive: boolean }) {
+const AUTOPLAY_DURATION = 6000; // 6 secondes par témoignage
+
+type CardPosition = "prev" | "active" | "next" | "hidden";
+
+function getCardStyle(position: CardPosition) {
+  const styles = {
+    prev: {
+      x: "-75%",
+      scale: 0.75,
+      rotateY: 25,
+      opacity: 0.4,
+      zIndex: 1,
+      filter: "blur(2px)",
+    },
+    active: {
+      x: "0%",
+      scale: 1,
+      rotateY: 0,
+      opacity: 1,
+      zIndex: 10,
+      filter: "blur(0px)",
+    },
+    next: {
+      x: "75%",
+      scale: 0.75,
+      rotateY: -25,
+      opacity: 0.4,
+      zIndex: 1,
+      filter: "blur(2px)",
+    },
+    hidden: {
+      x: "0%",
+      scale: 0.5,
+      rotateY: 0,
+      opacity: 0,
+      zIndex: 0,
+      filter: "blur(4px)",
+    },
+  };
+  return styles[position];
+}
+
+function TestimonialCard3D({
+  testimonial,
+  position,
+  onClick,
+}: {
+  testimonial: Testimonial;
+  position: CardPosition;
+  onClick?: () => void;
+}) {
+  const style = getCardStyle(position);
+  const isClickable = position === "prev" || position === "next";
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: isActive ? 1 : 0.5, scale: isActive ? 1 : 0.95 }}
-      transition={{ duration: 0.5 }}
-      className={`relative ${isActive ? "z-10" : "z-0"}`}
+      initial={false}
+      animate={{
+        x: style.x,
+        scale: style.scale,
+        rotateY: style.rotateY,
+        opacity: style.opacity,
+        zIndex: style.zIndex,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      }}
+      style={{
+        position: "absolute",
+        width: "100%",
+        transformStyle: "preserve-3d",
+        perspective: "1000px",
+        filter: style.filter,
+      }}
+      onClick={isClickable ? onClick : undefined}
+      className={isClickable ? "cursor-pointer" : ""}
     >
       <div className="relative p-8 md:p-10 rounded-3xl bg-gradient-to-br from-neutral-900/80 to-neutral-950/80 border border-white/10 backdrop-blur-xl overflow-hidden">
         {/* Background gradient */}
@@ -84,7 +154,7 @@ function TestimonialCard({ testimonial, isActive }: { testimonial: Testimonial; 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white font-bold">
-                {testimonial.author.split(" ").map(n => n[0]).join("")}
+                {testimonial.author.split(" ").map((n) => n[0]).join("")}
               </div>
               <div>
                 <div className="font-semibold text-white">{testimonial.author}</div>
@@ -110,6 +180,54 @@ function TestimonialCard({ testimonial, isActive }: { testimonial: Testimonial; 
 
 export function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const goToNext = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % testimonials.length);
+    setProgress(0);
+  }, []);
+
+  const goToPrev = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    setProgress(0);
+  }, []);
+
+  const goToIndex = useCallback((index: number) => {
+    setActiveIndex(index);
+    setProgress(0);
+  }, []);
+
+  // Calculer les positions des cards
+  const getPosition = (index: number): CardPosition => {
+    const diff = index - activeIndex;
+    const length = testimonials.length;
+
+    // Gérer le wrap-around
+    const normalizedDiff = ((diff + length + 1) % length) - 1;
+
+    if (normalizedDiff === 0) return "active";
+    if (normalizedDiff === -1 || (activeIndex === 0 && index === length - 1)) return "prev";
+    if (normalizedDiff === 1 || (activeIndex === length - 1 && index === 0)) return "next";
+    return "hidden";
+  };
+
+  // Auto-play avec progression
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          goToNext();
+          return 0;
+        }
+        return prev + (100 / (AUTOPLAY_DURATION / 50));
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [isPaused, goToNext]);
 
   return (
     <section className="section-lg bg-background relative overflow-hidden">
@@ -136,36 +254,89 @@ export function TestimonialsSection() {
           </p>
         </motion.div>
 
-        {/* Testimonials carousel */}
-        <div className="max-w-4xl mx-auto mb-12">
-          <AnimatePresence mode="wait">
-            <TestimonialCard
-              key={testimonials[activeIndex].id}
-              testimonial={testimonials[activeIndex]}
-              isActive={true}
-            />
-          </AnimatePresence>
+        {/* 3D Carousel */}
+        <div
+          className="relative max-w-4xl mx-auto mb-8"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          style={{ perspective: "1200px" }}
+        >
+          {/* Left arrow */}
+          <button
+            onClick={goToPrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 md:-translate-x-20 z-30 w-12 h-12 rounded-full bg-neutral-800/90 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white hover:bg-primary-500/20 hover:border-primary-500/50 transition-all duration-300 group shadow-lg"
+            aria-label="Témoignage précédent"
+          >
+            <ChevronLeftIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+          </button>
+
+          {/* 3D Cards Container */}
+          <div className="relative h-[320px] md:h-[280px] flex items-center justify-center">
+            {testimonials.map((testimonial, index) => {
+              const position = getPosition(index);
+              return (
+                <TestimonialCard3D
+                  key={testimonial.id}
+                  testimonial={testimonial}
+                  position={position}
+                  onClick={() => {
+                    if (position === "prev") goToPrev();
+                    if (position === "next") goToNext();
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Right arrow */}
+          <button
+            onClick={goToNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 md:translate-x-20 z-30 w-12 h-12 rounded-full bg-neutral-800/90 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white hover:bg-primary-500/20 hover:border-primary-500/50 transition-all duration-300 group shadow-lg"
+            aria-label="Témoignage suivant"
+          >
+            <ChevronRightIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+          </button>
         </div>
 
-        {/* Navigation dots */}
-        <div className="flex justify-center gap-3 mb-12">
-          {testimonials.map((_, index) => (
+        {/* Progress bar */}
+        <div className="max-w-md mx-auto mb-8">
+          <div className="h-1 bg-neutral-800 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-primary-500 to-secondary-500"
+              style={{ width: `${progress}%` }}
+              transition={{ duration: 0.05, ease: "linear" }}
+            />
+          </div>
+        </div>
+
+        {/* Avatar navigation */}
+        <div className="flex justify-center gap-4 mb-12">
+          {testimonials.map((testimonial, index) => (
             <button
-              key={index}
-              onClick={() => setActiveIndex(index)}
-              className={`relative w-3 h-3 rounded-full transition-all duration-300 ${
-                index === activeIndex
-                  ? "bg-primary-500 w-8"
-                  : "bg-neutral-700 hover:bg-neutral-600"
+              key={testimonial.id}
+              onClick={() => goToIndex(index)}
+              className={`relative group transition-all duration-300 ${
+                index === activeIndex ? "scale-110" : "opacity-60 hover:opacity-100"
               }`}
+              aria-label={`Voir le témoignage de ${testimonial.author}`}
             >
-              {index === activeIndex && (
-                <motion.div
-                  layoutId="activeTestimonial"
-                  className="absolute inset-0 rounded-full bg-primary-500"
-                  transition={{ type: "spring", bounce: 0.3 }}
-                />
-              )}
+              {/* Avatar */}
+              <div
+                className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-sm transition-all duration-300 ${
+                  index === activeIndex
+                    ? "bg-gradient-to-br from-primary-500 to-secondary-500 ring-2 ring-primary-500 ring-offset-2 ring-offset-neutral-950"
+                    : "bg-neutral-700 group-hover:bg-neutral-600"
+                }`}
+              >
+                {testimonial.author.split(" ").map((n) => n[0]).join("")}
+              </div>
+
+              {/* Name tooltip */}
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <span className="text-xs text-neutral-400 whitespace-nowrap">
+                  {testimonial.author.split(" ")[0]}
+                </span>
+              </div>
             </button>
           ))}
         </div>
