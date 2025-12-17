@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import {
   ArrowRightIcon,
@@ -16,50 +16,216 @@ import {
 import { FadeIn, GlowingOrb, StaggerContainer, staggerItem } from "@/components/ui/MotionWrapper";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
-// Page Header (simple, adapté)
+// Animated Gradient Text Component
+function AnimatedGradientText({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="bg-gradient-to-r from-primary-400 via-secondary-400 to-primary-400 bg-[length:200%_auto] animate-gradient bg-clip-text text-transparent">
+      {children}
+    </span>
+  );
+}
+
+// Grid Background Component
+function GridBackground() {
+  return (
+    <div className="absolute inset-0 z-0">
+      {/* Grid pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, white 1px, transparent 1px),
+            linear-gradient(to bottom, white 1px, transparent 1px)
+          `,
+          backgroundSize: "32px 32px",
+        }}
+      />
+      {/* Radial gradient mask */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse at center, transparent 0%, black 70%)",
+        }}
+      />
+    </div>
+  );
+}
+
+// Floating Service Icon Component
+interface FloatingIconProps {
+  icon: React.ReactNode;
+  label: string;
+  color: "blue" | "purple" | "cyan";
+  delay: number;
+  position: { x: string; y: string };
+}
+
+function FloatingServiceIcon({ icon, label, color, delay, position }: FloatingIconProps) {
+  const colorClasses = {
+    blue: {
+      bg: "from-primary-500/20 to-primary-600/5",
+      border: "border-primary-500/30 hover:border-primary-400/50",
+      icon: "text-primary-400",
+      glow: "hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]",
+    },
+    purple: {
+      bg: "from-secondary-500/20 to-secondary-600/5",
+      border: "border-secondary-500/30 hover:border-secondary-400/50",
+      icon: "text-secondary-400",
+      glow: "hover:shadow-[0_0_30px_rgba(139,92,246,0.3)]",
+    },
+    cyan: {
+      bg: "from-cyan-500/20 to-cyan-600/5",
+      border: "border-cyan-500/30 hover:border-cyan-400/50",
+      icon: "text-cyan-400",
+      glow: "hover:shadow-[0_0_30px_rgba(34,211,238,0.3)]",
+    },
+  };
+
+  const colors = colorClasses[color];
+
+  return (
+    <motion.div
+      className="absolute"
+      style={{ left: position.x, top: position.y }}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        y: [0, -10, 0],
+      }}
+      transition={{
+        opacity: { duration: 0.5, delay },
+        scale: { duration: 0.5, delay },
+        y: {
+          duration: 3 + delay,
+          repeat: Infinity,
+          ease: "easeInOut",
+        },
+      }}
+      whileHover={{ scale: 1.1 }}
+    >
+      <div
+        className={`
+          p-4 rounded-2xl bg-gradient-to-br ${colors.bg}
+          border ${colors.border} backdrop-blur-sm
+          transition-all duration-300 cursor-pointer
+          ${colors.glow}
+        `}
+      >
+        <div className={`w-8 h-8 ${colors.icon}`}>{icon}</div>
+        <p className="text-white/80 text-xs mt-2 font-medium whitespace-nowrap">{label}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+// Floating Services Visual Component
+function FloatingServicesVisual() {
+  const services = [
+    { icon: <TargetIcon className="w-full h-full" />, label: "Detection", color: "blue" as const, position: { x: "10%", y: "5%" }, delay: 0 },
+    { icon: <SearchIcon className="w-full h-full" />, label: "Inspection", color: "purple" as const, position: { x: "60%", y: "0%" }, delay: 0.1 },
+    { icon: <DocumentIcon className="w-full h-full" />, label: "OCR", color: "cyan" as const, position: { x: "35%", y: "35%" }, delay: 0.2 },
+    { icon: <ChipIcon className="w-full h-full" />, label: "Edge AI", color: "blue" as const, position: { x: "5%", y: "60%" }, delay: 0.3 },
+    { icon: <ServerIcon className="w-full h-full" />, label: "MLOps", color: "purple" as const, position: { x: "55%", y: "65%" }, delay: 0.4 },
+  ];
+
+  return (
+    <div className="relative h-80 lg:h-96">
+      {services.map((service, idx) => (
+        <FloatingServiceIcon key={idx} {...service} />
+      ))}
+    </div>
+  );
+}
+
+// Pulse Badge Component
+function PulseBadge() {
+  return (
+    <motion.div
+      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 mb-6"
+      animate={{
+        boxShadow: [
+          "0 0 0 0 rgba(59, 130, 246, 0)",
+          "0 0 0 8px rgba(59, 130, 246, 0.1)",
+          "0 0 0 0 rgba(59, 130, 246, 0)",
+        ],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      <ChipIcon className="w-4 h-4 text-primary-400" />
+      <span className="text-primary-400 text-sm font-medium">Nos Services</span>
+    </motion.div>
+  );
+}
+
+// Page Header - Split Layout
 function PageHeader() {
   return (
-    <section className="pt-24 pb-12 relative overflow-hidden">
-      <GlowingOrb className="top-0 right-1/4 -translate-y-1/2" color="blue" size="md" />
-      <GlowingOrb className="bottom-0 left-1/4 translate-y-1/2" color="purple" size="sm" />
+    <section className="pt-32 pb-20 relative overflow-hidden">
+      {/* Background */}
+      <GridBackground />
+      <GlowingOrb className="top-0 left-1/4 -translate-y-1/2" color="blue" size="lg" />
+      <GlowingOrb className="bottom-0 right-1/4 translate-y-1/2" color="purple" size="md" />
 
       <div className="container-content relative z-10">
-        <FadeIn className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 mb-6">
-            <ChipIcon className="w-4 h-4 text-primary-400" />
-            <span className="text-primary-400 text-sm font-medium">Nos Services</span>
-          </div>
+        <div className="grid lg:grid-cols-5 gap-12 items-center">
+          {/* Left - Content (3 cols) */}
+          <motion.div
+            className="lg:col-span-3"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <PulseBadge />
 
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Solutions <span className="text-primary-400">Computer Vision</span> souveraines
-          </h1>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              Solutions{" "}
+              <AnimatedGradientText>Computer Vision</AnimatedGradientText>
+              {" "}souveraines
+            </h1>
 
-          <p className="text-lg text-neutral-300 leading-relaxed mb-8">
-            De la conception a la production industrielle, une approche complete et securisee
-            pour vos projets de vision par ordinateur.
-          </p>
+            <p className="text-lg text-neutral-300 leading-relaxed mb-8 max-w-xl">
+              De la conception a la production industrielle, une approche complete et securisee
+              pour vos projets de vision par ordinateur.
+            </p>
 
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href="/site_vitrine/contact"
-              className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold text-sm transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:scale-[1.02]"
-            >
-              Demander un diagnostic
-              <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-            <button
-              onClick={() => {
-                const element = document.getElementById("detection");
-                if (element) {
-                  element.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white font-medium text-sm hover:bg-white/5 transition-all duration-300"
-            >
-              Voir nos services
-            </button>
-          </div>
-        </FadeIn>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/site_vitrine/contact"
+                className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold text-sm transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:scale-[1.02]"
+              >
+                Demander un diagnostic
+                <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+              <button
+                onClick={() => {
+                  const element = document.getElementById("detection");
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white font-medium text-sm hover:bg-white/5 transition-all duration-300"
+              >
+                Voir nos services
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Right - Floating Icons (2 cols) */}
+          <motion.div
+            className="lg:col-span-2 hidden lg:block"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <FloatingServicesVisual />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
