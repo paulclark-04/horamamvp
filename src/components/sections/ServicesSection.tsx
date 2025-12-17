@@ -25,6 +25,7 @@ const services = [
     featured: true,
     color: "blue",
     demo: "detection",
+    tags: ["IA", "Temps réel", "Industrie"],
   },
   {
     id: "inspection",
@@ -35,6 +36,7 @@ const services = [
     category: "ia",
     color: "cyan",
     demo: "inspection",
+    tags: ["Qualité", "Automatisé"],
   },
   {
     id: "ocr",
@@ -45,6 +47,7 @@ const services = [
     category: "ia",
     color: "purple",
     demo: "ocr",
+    tags: ["Multi-langues", "Documents"],
   },
   {
     id: "edge",
@@ -56,6 +59,7 @@ const services = [
     featured: true,
     color: "green",
     demo: "edge",
+    tags: ["IoT", "Basse latence", "Edge"],
   },
   {
     id: "mlops",
@@ -66,6 +70,7 @@ const services = [
     category: "infra",
     color: "orange",
     demo: "mlops",
+    tags: ["DevOps", "Monitoring", "CI/CD"],
   },
   {
     id: "security",
@@ -76,6 +81,7 @@ const services = [
     category: "security",
     color: "red",
     demo: "security",
+    tags: ["ISO 27001", "Chiffrement", "Souverain"],
   },
 ];
 
@@ -86,49 +92,53 @@ const categories = [
   { id: "security", label: "Sécurité" },
 ];
 
-const colorVariants: Record<string, { bg: string; border: string; glow: string; text: string }> = {
+const colorVariants: Record<string, { bg: string; border: string; glow: string; text: string; iconGlow: string }> = {
   blue: {
     bg: "from-blue-500/20 to-blue-600/5",
     border: "group-hover:border-blue-500/50",
     glow: "rgba(59, 130, 246, 0.4)",
     text: "text-blue-400",
+    iconGlow: "bg-blue-500/40",
   },
   cyan: {
     bg: "from-cyan-500/20 to-cyan-600/5",
     border: "group-hover:border-cyan-500/50",
     glow: "rgba(34, 211, 238, 0.4)",
     text: "text-cyan-400",
+    iconGlow: "bg-cyan-500/40",
   },
   purple: {
     bg: "from-purple-500/20 to-purple-600/5",
     border: "group-hover:border-purple-500/50",
     glow: "rgba(168, 85, 247, 0.4)",
     text: "text-purple-400",
+    iconGlow: "bg-purple-500/40",
   },
   green: {
     bg: "from-emerald-500/20 to-emerald-600/5",
     border: "group-hover:border-emerald-500/50",
     glow: "rgba(16, 185, 129, 0.4)",
     text: "text-emerald-400",
+    iconGlow: "bg-emerald-500/40",
   },
   orange: {
     bg: "from-orange-500/20 to-orange-600/5",
     border: "group-hover:border-orange-500/50",
     glow: "rgba(249, 115, 22, 0.4)",
     text: "text-orange-400",
+    iconGlow: "bg-orange-500/40",
   },
   red: {
     bg: "from-red-500/20 to-red-600/5",
     border: "group-hover:border-red-500/50",
     glow: "rgba(239, 68, 68, 0.4)",
     text: "text-red-400",
+    iconGlow: "bg-red-500/40",
   },
 };
 
-// Mini demo animations for each service
+// Mini demo animations for each service (always visible, intensified on hover)
 function ServiceDemo({ type, isHovered }: { type: string; isHovered: boolean }) {
-  if (!isHovered) return null;
-
   const demos: Record<string, React.ReactNode> = {
     detection: (
       <div className="absolute inset-0 flex items-center justify-center">
@@ -239,9 +249,9 @@ function ServiceDemo({ type, isHovered }: { type: string; isHovered: boolean }) 
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 0.15 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0.08 }}
+      animate={{ opacity: isHovered ? 0.35 : 0.08 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
       className="absolute inset-0 pointer-events-none"
     >
       {demos[type]}
@@ -294,18 +304,45 @@ function ServiceCard({ service, index }: { service: typeof services[0]; index: n
 
       {/* Content */}
       <div className={`relative z-10 p-6 ${service.featured ? "md:p-8" : ""} h-full flex flex-col`}>
-        {/* Icon */}
-        <motion.div
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          className={`w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 ${colors.text} group-hover:border-current/30 transition-colors duration-300`}
-        >
-          {service.icon}
-        </motion.div>
+        {/* Icon with animated glow */}
+        <div className="relative mb-4 w-16 h-16">
+          {/* Glow effect */}
+          <motion.div
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.4, 0.7, 0.4],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className={`absolute inset-0 rounded-xl blur-xl ${colors.iconGlow}`}
+          />
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            className={`relative w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center ${colors.text} group-hover:border-current/30 transition-colors duration-300`}
+          >
+            {service.icon}
+          </motion.div>
+        </div>
 
         {/* Title */}
         <h3 className={`text-xl font-semibold text-white mb-2 group-hover:${colors.text} transition-colors duration-300`}>
           {service.title}
         </h3>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {service.tags.map((tag) => (
+            <span
+              key={tag}
+              className={`px-2 py-0.5 text-xs font-medium rounded-full bg-white/5 border border-white/10 ${colors.text} group-hover:bg-current/10 transition-colors duration-300`}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
 
         {/* Description */}
         <p className="text-neutral-400 text-sm leading-relaxed mb-4 flex-grow">
